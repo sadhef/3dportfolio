@@ -142,7 +142,7 @@ const projects = [
     source_code_link: "https://66ba64628742a40eefd6ae4b--dazzling-duckanoo-9ca102.netlify.app/",
   },
   {
-    name: "Movie Website",
+    name: "RIFILX Movie Website",
     description:
       "A React app using Vite and Bootstrap that displays favorite movies with reusable components (Header, Movie, MovieList) and props.Fetches movie data from an external API.",
     tags: [
@@ -160,7 +160,7 @@ const projects = [
       },
     ],
     image: jobit,
-    source_code_link: "https://66b8f83704f2f5888f435af8--lovely-buttercream-40047c.netlify.app/",
+    source_code_link: "https://magical-gaufre-b5f535.netlify.app/",
   },
 ];
 
