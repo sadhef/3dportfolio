@@ -3,26 +3,29 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { Points, PointMaterial, Preload } from "@react-three/drei";
 import * as random from "maath/random/dist/maath-random.esm";
 
-const Stars = (props) => {
+// Simplified Stars component that works reliably across browsers
+const Stars = () => {
   const ref = useRef();
+  
+  // Detect mobile for performance optimization
   const isMobile = window.innerWidth < 768;
   
-  // Use useMemo to generate star positions only once
+  // Generate stars only once with useMemo
   const sphere = useMemo(() => {
-    // Drastically reduced star count for mobile
-    const starCount = isMobile ? 800 : 1800;
+    // Reduce star count for better performance
+    const starCount = isMobile ? 1000 : 1500;
     return random.inSphere(new Float32Array(starCount * 3), { radius: 1.2 });
   }, [isMobile]);
 
-  // Drastically reduced animation frequency
+  // Simplified animation logic
   useFrame((state, delta) => {
-    // Skip most frames for mobile - only update every 10th frame
-    if (isMobile && Math.floor(state.clock.elapsedTime * 10) % 10 !== 0) return;
+    // Skip frames on mobile for better performance
+    if (isMobile && state.clock.elapsedTime % 2 > 0) return;
     
     if (ref.current) {
-      // Even slower rotation
-      ref.current.rotation.x -= delta / 80;
-      ref.current.rotation.y -= delta / 100;
+      // Simple slow rotation
+      ref.current.rotation.x -= delta / 50;
+      ref.current.rotation.y -= delta / 75;
     }
   });
 
@@ -33,12 +36,11 @@ const Stars = (props) => {
         positions={sphere} 
         stride={3} 
         frustumCulled
-        {...props}
       >
         <PointMaterial
           transparent
           color='#f5f5f5'
-          size={0.003}
+          size={0.002}
           sizeAttenuation={true}
           depthWrite={false}
         />
@@ -47,52 +49,58 @@ const Stars = (props) => {
   );
 };
 
-// Create a simplified version for mobile
-const MobileStars = () => {
+// Fallback static stars for when canvas fails
+const StaticStarsBackground = () => {
   return (
-    <div className="fixed inset-0 z-[-1]">
-      <div className="absolute inset-0 bg-[url('/src/assets/stars-bg.png')] bg-repeat opacity-40"></div>
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black"></div>
+    <div className="fixed inset-0 z-[-1] static-stars-bg">
+      <div className="absolute inset-0 bg-black"></div>
+      <div className="absolute inset-0 opacity-30 stars-pattern"></div>
     </div>
   );
 };
 
+// Main component with fallback
 const StarsCanvas = () => {
-  const [shouldRender, setShouldRender] = useState(false);
-  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  const [canvasSupported, setCanvasSupported] = useState(true);
+  const [isLoaded, setIsLoaded] = useState(false);
   
-  // Skip heavy rendering for older mobile devices
-  const isLowEndDevice = isMobile && (
-    /iPhone\s(5|6|7|8|SE)|Android.*\s(4|5|6)\./i.test(navigator.userAgent)
-  );
-  
-  // Delay stars rendering until after initial page load
   useEffect(() => {
+    // Check for proper WebGL support
+    const canvas = document.createElement('canvas');
+    const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+    
+    // Set canvas support flag
+    setCanvasSupported(!!gl);
+    
+    // Delay stars rendering to prioritize main content
     const timer = setTimeout(() => {
-      setShouldRender(true);
-    }, isMobile ? 2500 : 1500); // Even longer delay for mobile
+      setIsLoaded(true);
+    }, 1000);
     
     return () => clearTimeout(timer);
-  }, [isMobile]);
+  }, []);
   
-  // Don't render until we're ready, and use static version for low-end devices
-  if (!shouldRender) return null;
-  if (isLowEndDevice) return <MobileStars />;
+  // Don't render until ready
+  if (!isLoaded) return null;
+  
+  // Use static fallback if WebGL not supported
+  if (!canvasSupported) {
+    return <StaticStarsBackground />;
+  }
   
   return (
-    <div className='w-full h-full fixed inset-0 z-[-1] pointer-events-none stars-canvas'>
+    <div className='w-full h-full fixed inset-0 z-[-1] pointer-events-none universal-stars'>
       <Canvas 
         camera={{ position: [0, 0, 1] }}
-        frameloop={isMobile ? "demand" : "always"}
-        dpr={isMobile ? 0.5 : [0.5, 1]} // Lower resolution for mobile
+        style={{ background: 'black' }}
+        frameloop="demand"
+        dpr={[0.5, 1]} // Lower resolution for performance
         gl={{ 
-          powerPreference: "low-power",
+          powerPreference: "default", 
           antialias: false, 
           stencil: false,
-          depth: false,
-          alpha: true
+          depth: false
         }}
-        performance={{ min: isMobile ? 0.1 : 0.5 }}
       >
         <Suspense fallback={null}>
           <Stars />

@@ -1,0 +1,172 @@
+
+/* Project section enhancements */
+.works-section {
+    position: relative;
+    z-index: 1;
+    /* Force hardware acceleration in all browsers */
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    will-change: opacity;
+    /* Ensure proper rendering context */
+    isolation: isolate;
+  }
+  
+  /* Project grid using CSS Grid with flexbox fallback for maximum compatibility */
+  .projects-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1.75rem;
+    margin: 0 -0.5rem;
+  }
+  
+  /* Grid layout with better browser support */
+  @supports (display: grid) {
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1.75rem;
+      margin: 0;
+    }
+    
+    @media (min-width: 640px) {
+      .projects-grid {
+        grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      }
+    }
+  }
+  
+  /* Project card styles with cross-browser fixes */
+  .project-card {
+    /* Base styles */
+    position: relative;
+    margin: 0.5rem;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    
+    /* Force hardware acceleration */
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    
+    /* Initial state for animation */
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  
+  /* Card visible state (added via JavaScript for guaranteed animation) */
+  .project-card.card-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  
+  /* Section visibility class for progressive animation */
+  .section-visible .project-card {
+    opacity: 1;
+    transform: translateY(0);
+    transition-delay: calc(var(--index, 0) * 100ms);
+  }
+  
+  /* Fix description height to prevent layout shifts */
+  .project-description {
+    /* Approximately 4-5 lines of text */
+    display: -webkit-box;
+    -webkit-line-clamp: 5;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    max-height: 7em;
+  }
+  
+  /* Force hardware acceleration on critical elements */
+  .header-container, 
+  .project-card img,
+  .black-gradient {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+  }
+  
+  /* Ensure images render properly */
+  .project-card img {
+    /* Ensure proper image rendering in all browsers */
+    object-fit: cover;
+    object-position: center;
+    width: 100%;
+    height: 100%;
+    /* Add a subtle transition */
+    transition: transform 0.3s ease;
+  }
+  
+  /* Simple hover effect that works everywhere */
+  .project-card:hover {
+    transform: translateY(-5px);
+  }
+  
+  .project-card:hover img {
+    transform: scale(1.02);
+  }
+  
+  /* Prevent text overflow issues */
+  .text-white, .text-secondary {
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    hyphens: auto;
+  }
+  
+  /* Ensure proper stacking context */
+  .black-gradient {
+    position: relative;
+    z-index: 2;
+  }
+  
+  /* Prevent framer-motion timing issues */
+  .motion-div {
+    opacity: 0;
+  }
+  
+  .motion-div.is-visible {
+    opacity: 1;
+    transition: opacity 0.5s ease;
+  }
+  
+  /* Force text rendering for better performance */
+  body {
+    text-rendering: optimizeSpeed;
+  }
+  
+  /* Additional helper classes */
+  .force-hardware-accel {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    will-change: transform;
+  }
+  
+  .prevent-layout-shift {
+    min-height: 0;
+    height: auto !important;
+  }
+  
+  /* Ensure proper initial visibility  */
+  .section-placeholder {
+    min-height: 100px;
+    position: relative;
+  }
+  
+  /* Better flexbox support */
+  .flex {
+    display: flex;
+    flex-wrap: wrap;
+  }
+  
+  .flex-col {
+    flex-direction: column;
+  }
+  
+  /* Simple placeholder loading animation */
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+  
+  .placeholder-loading {
+    background: linear-gradient(90deg, #1a1a1a, #2a2a2a, #1a1a1a);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }

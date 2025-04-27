@@ -8,7 +8,7 @@ import { Navbar, Hero } from "./components";
 // Import custom styles
 import "./styles/imageFilters.css";
 import "./styles/heroStyles.css";
-import "./styles/safari-fixes.css"; // Add Safari-specific fixes
+import "./styles/universal.css"; // Add the universal CSS
 
 // Custom error boundary for better error handling
 class ErrorBoundary extends React.Component {
@@ -54,28 +54,11 @@ const LoadingComponent = () => (
   </div>
 );
 
-// Safari detection
-const isSafari = () => {
-  const ua = navigator.userAgent.toLowerCase();
-  return ua.indexOf('safari') !== -1 && ua.indexOf('chrome') === -1;
-};
-
-// Progressive loading of components with priority
+// Progressive loading of components
 const About = lazy(() => import("./components/About"));
 const Experience = lazy(() => import("./components/Experience"));
 const Tech = lazy(() => import("./components/Tech"));
-// Import the optimized Works component - directly for Safari
-const Works = lazy(() => {
-  // Use a small delay for Safari to improve component loading
-  if (isSafari()) {
-    return new Promise(resolve => {
-      setTimeout(() => {
-        resolve(import("./components/Works"));
-      }, 300);
-    });
-  }
-  return import("./components/Works");
-});
+const Works = lazy(() => import("./components/Works"));
 const Contact = lazy(() => import("./components/Contact"));
 const StarsCanvas = lazy(() => 
   import("./components/canvas").then(module => ({
@@ -85,23 +68,22 @@ const StarsCanvas = lazy(() =>
 
 const App = () => {
   const [isLoaded, setIsLoaded] = useState(false);
-  const [isSafariBrowser, setIsSafariBrowser] = useState(false);
-  const [retryCount, setRetryCount] = useState(0);
+  const [visibleSections, setVisibleSections] = useState({
+    about: false,
+    experience: false,
+    tech: false,
+    works: false,
+    contact: false
+  });
+  
+  // Mobile detection (but not browser-specific)
+  const isMobile = window.innerWidth < 768;
 
   useEffect(() => {
-    // Detect Safari
-    const safariDetected = isSafari();
-    setIsSafariBrowser(safariDetected);
-    
-    // Add Safari class to HTML for CSS targeting
-    if (safariDetected) {
-      document.documentElement.classList.add('safari');
-    }
-    
     // Set a timeout to ensure the app loads even if 'load' event doesn't fire
     const timer = setTimeout(() => {
       setIsLoaded(true);
-    }, safariDetected ? 1200 : 800); // Longer timeout for Safari
+    }, 800);
     
     // Listen for page load
     window.addEventListener('load', () => {
@@ -118,34 +100,51 @@ const App = () => {
     };
   }, []);
 
-  // Safari-specific hack to force re-mount of Works component if needed
+  // Setup intersection observer for progressive loading
   useEffect(() => {
-    if (isSafariBrowser && isLoaded) {
-      // Check if works section loaded properly
-      const checkWorksSection = setTimeout(() => {
-        const worksSection = document.getElementById('projects');
-        const projectsVisible = worksSection && 
-          worksSection.querySelectorAll('.safari-card, .bg-tertiary').length > 0;
-        
-        // Force remount if not loaded and under retry limit
-        if (!projectsVisible && retryCount < 3) {
-          console.log('Retrying Works section load...');
-          setRetryCount(prev => prev + 1);
-          
-          // Force DOM update
-          const parentElement = worksSection?.parentElement;
-          if (parentElement) {
-            parentElement.style.display = 'none';
-            setTimeout(() => {
-              parentElement.style.display = 'block';
-            }, 50);
+    if (!isLoaded) return;
+    
+    const observerOptions = {
+      root: null,
+      rootMargin: '0px',
+      threshold: 0.1
+    };
+    
+    const handleIntersection = (entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const sectionId = entry.target.id;
+          if (sectionId && Object.keys(visibleSections).includes(sectionId)) {
+            setVisibleSections(prev => ({
+              ...prev,
+              [sectionId]: true
+            }));
+            
+            // Add visibility class for animation
+            entry.target.classList.add('section-visible');
+            
+            // Index cards for staggered animation
+            const cards = entry.target.querySelectorAll('.project-card');
+            cards.forEach((card, index) => {
+              card.style.setProperty('--index', index);
+              setTimeout(() => {
+                card.classList.add('card-visible');
+              }, index * 100);
+            });
           }
         }
-      }, 1000);
-      
-      return () => clearTimeout(checkWorksSection);
-    }
-  }, [isSafariBrowser, isLoaded, retryCount]);
+      });
+    };
+    
+    const observer = new IntersectionObserver(handleIntersection, observerOptions);
+    
+    // Observe section placeholder elements
+    document.querySelectorAll('.section-placeholder').forEach(el => {
+      observer.observe(el);
+    });
+    
+    return () => observer.disconnect();
+  }, [isLoaded, visibleSections]);
 
   // Simple loading screen
   if (!isLoaded) {
@@ -169,7 +168,7 @@ const App = () => {
           <Hero />
         </div>
         
-        {/* About section */}
+        {/* Sections with progressive loading */}
         <div id="about" className="section-placeholder">
           <ErrorBoundary>
             <Suspense fallback={<LoadingComponent />}>
@@ -178,7 +177,6 @@ const App = () => {
           </ErrorBoundary>
         </div>
         
-        {/* Experience section */}
         <div id="experience" className="section-placeholder">
           <ErrorBoundary>
             <Suspense fallback={<LoadingComponent />}>
@@ -187,7 +185,6 @@ const App = () => {
           </ErrorBoundary>
         </div>
         
-        {/* Tech section */}
         <div id="tech" className="section-placeholder">
           <ErrorBoundary>
             <Suspense fallback={<LoadingComponent />}>
@@ -196,17 +193,15 @@ const App = () => {
           </ErrorBoundary>
         </div>
         
-        {/* Works section - with retryCount as key to force remount in Safari */}
-        <div id="works-container" className="section-placeholder safari-stacking-fix">
+        {/* Works section with special handling */}
+        <div id="works" className="section-placeholder force-hardware-accel">
           <ErrorBoundary>
             <Suspense fallback={<LoadingComponent />}>
-              {/* Using key to force remount in Safari if needed */}
-              <Works key={`works-${isSafariBrowser ? retryCount : 'default'}`} />
+              <Works />
             </Suspense>
           </ErrorBoundary>
         </div>
         
-        {/* Contact section */}
         <div id="contact" className="section-placeholder">
           <ErrorBoundary>
             <Suspense fallback={<LoadingComponent />}>
@@ -218,19 +213,14 @@ const App = () => {
         </div>
       </div>
       
-      {/* Load StarsCanvas with reduced rendering for Safari */}
-      {!isSafariBrowser && (
-        <Suspense fallback={null}>
-          <StarsCanvas />
-        </Suspense>
-      )}
+      {/* Simpler stars canvas for all browsers */}
+      <Suspense fallback={null}>
+        <StarsCanvas />
+      </Suspense>
       
-      {/* Simplified stars for Safari */}
-      {isSafariBrowser && (
-        <div className="fixed inset-0 z-[-1] safari-bg">
-          <div className="absolute inset-0 bg-black"></div>
-          <div className="absolute inset-0 opacity-20 safari-stars"></div>
-        </div>
+      {/* Additional static background fallback if needed */}
+      {isMobile && (
+        <div className="fixed inset-0 z-[-2] bg-gradient-to-b from-black to-[#050505]"></div>
       )}
     </BrowserRouter>
   );
