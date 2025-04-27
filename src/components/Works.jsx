@@ -65,9 +65,6 @@ const Works = () => {
 
   // Force component to update once mounted
   useEffect(() => {
-    // Add universal class for applying fixes to all browsers
-    document.documentElement.classList.add('safari');
-    
     // Force DOM update to ensure component renders
     setTimeout(() => {
       setIsLoaded(true);
@@ -114,19 +111,22 @@ const Works = () => {
   );
 };
 
-// Create a universal wrapper with Safari fixes applied to all browsers
-const UniversalSectionWrapper = (Component, idName) => {
+// Create a universal wrapper that matches other section sizes
+const ConsistentSectionWrapper = (Component, idName) => {
   return function HOC() {
     return (
       <section 
-        className="safari-section relative w-full min-h-screen mx-auto px-4 py-10 z-10" 
+        className="consistent-section relative w-full mx-auto z-10" 
         id={idName}
       >
-        <span className="hash-span" id={idName}>&nbsp;</span>
-        <Component />
+        {/* Match the padding and margin with other sections */}
+        <div className={`${styles.padding} max-w-7xl mx-auto relative`}>
+          <span className="hash-span" id={idName}>&nbsp;</span>
+          <Component />
+        </div>
       </section>
     );
   };
 };
 
-export default UniversalSectionWrapper(Works, "projects");
+export default ConsistentSectionWrapper(Works, "projects");

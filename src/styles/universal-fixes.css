@@ -173,3 +173,93 @@ html {
 .optimize-rendering {
   content-visibility: auto;
 }
+/* Ensure all sections have consistent sizing */
+.consistent-section {
+  min-height: auto !important; /* Override any min-height settings */
+  padding: 4rem 0; /* Consistent top/bottom padding */
+  position: relative;
+  overflow: hidden;
+}
+
+/* Match the section wrapper style from SectionWrapper.jsx */
+.consistent-section .max-w-7xl {
+  max-width: 80rem;
+  margin-left: auto;
+  margin-right: auto;
+  position: relative;
+  z-index: 0;
+}
+
+/* Fix works section specific issues */
+.works-section {
+  width: 100%;
+  transform: translateZ(0); /* Force hardware acceleration */
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* Project grid styling to match other sections */
+.safari-works-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.75rem;
+  width: 100%;
+  margin-top: 2rem; /* Match other section spacing */
+  margin-bottom: 2rem;
+}
+
+/* Fix weird margin issues that can cause inconsistent heights */
+.safari-works-grid {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+/* Make sure all sections use the same box model */
+section {
+  box-sizing: border-box;
+}
+
+/* Ensure consistent vertical spacing between sections */
+section + section {
+  padding-top: 4rem;
+}
+
+/* Fix any hash anchor link scroll positioning */
+.hash-span {
+  margin-top: -100px;
+  padding-bottom: 100px;
+  display: block;
+}
+
+/* Make sure all sections have proper z-index stacking */
+section {
+  position: relative;
+  z-index: 1;
+}
+
+/* Ensure consistent padding for mobile screens */
+@media (max-width: 640px) {
+  .consistent-section {
+    padding: 3rem 1rem;
+  }
+  
+  /* Adjust the grid for smaller screens */
+  .safari-works-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+}
+
+/* Make sure cards have consistent height */
+.safari-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Ensure content area has consistent vertical space */
+.safari-text-truncate {
+  min-height: 8em;
+  max-height: 8em;
+  overflow: hidden;
+}
