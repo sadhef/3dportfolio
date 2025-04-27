@@ -30,7 +30,7 @@ const ProjectCard = ({
           <img
             src={image}
             alt='project_image'
-            className='w-full h-full object-cover rounded-2xl'
+            className='w-full h-full object-cover rounded-2xl filter grayscale' // Added grayscale filter
           />
 
           <div className='absolute inset-0 flex justify-end m-3 card-img_hover'>
@@ -56,7 +56,7 @@ const ProjectCard = ({
           {tags.map((tag) => (
             <p
               key={`${name}-${tag.name}`}
-              className={`text-[14px] ${tag.color}`}
+              className='text-[14px] text-white'
             >
               #{tag.name}
             </p>

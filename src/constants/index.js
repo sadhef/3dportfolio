@@ -20,9 +20,13 @@ import {
   tesla,
   shopify,
   carrent,
+  biz,
+  blade,
+  turf,
   jobit,
   tripguide,
   threejs,
+  cook,
 } from "../assets";
 
 export const navLinks = [
@@ -121,25 +125,108 @@ const experiences = [
 
 const projects = [
   {
-    name: "Weather Application",
+    name: "RiField Turf Booking",
     description:
-      "A web-based weather application utilizing HTML, CSS, Bootstrap, and JavaScript for an intuitive and responsive user interface, enabling users to search and view real-time weather data efficiently.",
+      "A MERN stack turf booking platform with multi-portal access, secure authentication, real-time booking management, Razorpay payments, automated notifications, analytics dashboards, and state management using Redux Toolkit.",
     tags: [
       {
-        name: "HTML",
+        name: "MERN Stack",
         color: "blue-text-gradient",
       },
       {
-        name: "JAVASCRIPT",
+        name: "Redux",
         color: "green-text-gradient",
       },
       {
-        name: "BOOTSTRAP",
+        name: "RazorPay",
         color: "pink-text-gradient",
       },
     ],
-    image: carrent,
-    source_code_link: "https://66ba64628742a40eefd6ae4b--dazzling-duckanoo-9ca102.netlify.app/",
+    image: turf,
+    source_code_link: "https://rifield-web-appuser65d9.vercel.app/",
+  },
+  {
+    name: "COokiFy",
+    description: 
+      "A recipe discovery platform built with React and Node.js that helps users find recipes based on ingredients they have. Features include multilingual support (English, Malayalam, Tamil), voice-controlled cooking instructions, recipe search with ingredient matching, user reviews and ratings, favorites system, chatbot assistance, and recipe nutrition calculation.",
+    tags: [
+      {
+        name: "React.js",
+        color: "blue-text-gradient",
+      },
+      {
+        name: "Node.js",
+        color: "green-text-gradient",
+      },
+      {
+        name: "MongoDB",
+        color: "yellow-text-gradient",
+      },
+      {
+        name: "Tailwind CSS",
+        color: "pink-text-gradient",
+      }
+    ],
+    image: cook,
+    source_code_link: "https://cookifyy.vercel.app/",
+  },
+  {
+    name: "CTF Platform",
+    description:
+    "A comprehensive Capture The Flag (CTF) platform with user authentication, timed challenges, admin dashboard, and cloud reporting features. The platform allows users to solve progressive levels of security challenges within a time limit. It includes admin capabilities for managing users, challenges, and progress tracking. Additional features include a community chat system, offline mode support, responsive design with dark/light themes, and a specialized cloud dashboard for monitoring system status.",
+    tags: [
+    {
+    name: "React.js",
+    color: "blue-text-gradient",
+    },
+    {
+    name: "Node.js",
+    color: "green-text-gradient",
+    },
+    {
+    name: "MongoDB",
+    color: "yellow-text-gradient",
+    },
+    {
+    name: "Tailwind CSS",
+    color: "pink-text-gradient",
+    }
+    ],
+    image: biz,
+    source_code_link: "https://biztrastech.vercel.app/",
+    },
+    {
+      name: "BladeRunner",
+      description: 
+          "A sophisticated engine analysis platform designed for advanced performance optimization and monitoring. BladeRunner provides a secure authentication system with admin approval workflow, interactive dashboards for real-time engine data visualization, and comprehensive analytics tools. The platform features multiple specialized views including engine variants exploration, performance metrics, and flight speed analysis. Built with a modern tech stack, it includes responsive design, dark/light theme support, and Microsoft authentication integration. The system architecture consists of a React frontend, Node.js backend, and Python-based analytics engine with containerized deployment via Kubernetes.",
+      tags: [
+          {
+              name: "React.js",
+              color: "blue-text-gradient",
+          },
+          {
+              name: "Node.js",
+              color: "green-text-gradient",
+          },
+          {
+              name: "Python",
+              color: "yellow-text-gradient",
+          },
+          {
+              name: "Tailwind CSS",
+              color: "pink-text-gradient",
+          },
+          {
+              name: "Docker",
+              color: "orange-text-gradient",
+          },
+          {
+              name: "Kubernetes",
+              color: "purple-text-gradient",
+          }
+      ],
+      image: blade,
+      source_code_link: "https://bladerunner.greenjets.com/",
   },
   {
     name: "RIFILX Movie Website",
