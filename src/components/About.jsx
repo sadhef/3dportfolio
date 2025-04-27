@@ -11,7 +11,7 @@ const ServiceCard = ({ index, title, icon }) => (
   <Tilt className='xs:w-[250px] w-full'>
     <motion.div
       variants={fadeIn("right", "spring", index * 0.5, 0.75)}
-      className='w-full green-pink-gradient p-[1px] rounded-[20px] shadow-card'
+      className='w-full p-[1px] rounded-[20px] shadow-card border border-gray-700' // Added border
     >
       <div
         options={{
@@ -23,8 +23,8 @@ const ServiceCard = ({ index, title, icon }) => (
       >
         <img
           src={icon}
-          alt='web-development'
-          className='w-16 h-16 object-contain'
+          alt={title}
+          className='w-16 h-16 object-contain filter grayscale' // Added grayscale filter
         />
 
         <h3 className='text-white text-[20px] font-bold text-center'>
@@ -47,15 +47,15 @@ const About = () => {
         variants={fadeIn("", "", 0.1, 1)}
         className='mt-4 text-secondary text-[17px] max-w-3xl leading-[30px]'
       >
+        I am a highly motivated self-starter Full Stack Developer with experience in dynamic and fast-paced environments. 
+        My expertise spans the MERN stack (MongoDB, Express.js, React.js, and Node.js) with proficiency in PostgreSQL 
+        for relational database management. I've integrated Python-based data science, AI, and machine learning capabilities
+        and have hands-on experience with Docker for containerization and deployment across multiple environments.
         
-       I am a MERN Full Stack Developer with expertise in MongoDB, Express.js, 
-       React.js, and Node.js. I have extensive experience building robust, scalable 
-       web applications and APIs. I am also proficient in PostgreSQL for relational database 
-       management and have hands-on experience with Docker for containerization and deployment. 
-       I am passionate about problem-solving and possess strong analytical skills, enabling me to 
-       tackle complex challenges effectively. My technical proficiency, combined with my focus on 
-       delivering high-quality, optimized code, helps me create efficient and user-friendly solutions that solve
-        real-world problems. Let's work together to bring your ideas to life!
+        Additionally, I've developed cross-platform mobile applications using React Native, leveraging RESTful APIs 
+        and managing state with Redux/Context API. My technical proficiency, combined with my focus on 
+        delivering high-quality, optimized code, helps me create efficient and user-friendly solutions that solve
+        real-world problems. I'm eager to contribute to an organization that values technical excellence and fosters professional growth.
       </motion.p>
 
       <div className='mt-20 flex flex-wrap gap-10'>

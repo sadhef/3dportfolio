@@ -16,12 +16,12 @@ const ExperienceCard = ({ experience }) => {
   return (
     <VerticalTimelineElement
       contentStyle={{
-        background: "#1d1836",
-        color: "#fff",
+        background: "#1a1a1a", // Darker gray
+        color: "#ffffff",      // White text
       }}
-      contentArrowStyle={{ borderRight: "7px solid  #232631" }}
+      contentArrowStyle={{ borderRight: "7px solid #1a1a1a" }}
       date={experience.date}
-      iconStyle={{ background: experience.iconBg }}
+      iconStyle={{ background: experience.iconBg, filter: "grayscale(100%)" }} // Grayscale filter for icons
       icon={
         <div className='flex justify-center items-center w-full h-full'>
           <img
@@ -69,7 +69,7 @@ const Experience = () => {
       </motion.div>
 
       <div className='mt-20 flex flex-col'>
-        <VerticalTimeline>
+        <VerticalTimeline lineColor="#888888"> {/* Medium gray line color */}
           {experiences.map((experience, index) => (
             <ExperienceCard
               key={`experience-${index}`}

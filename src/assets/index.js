@@ -1,4 +1,3 @@
-import logo from "./logo.svg";
 import backend from "./backend.png";
 import creator from "./creator.png";
 import mobile from "./mobile.png";
@@ -30,9 +29,12 @@ import biztras from "./company/biztras.png";
 import carrent from "./carrent.png";
 import jobit from "./jobit.png";
 import tripguide from "./tripguide.png";
+import turf from "./turf.png";
+import cook from "./cook.png";
+import biz from "./biz.png";
+import blade from "./blade.png";
 
 export {
-  logo,
   backend,
   creator,
   mobile,
@@ -59,6 +61,10 @@ export {
   starbucks,
   tesla,
   carrent,
+  biz,
+  blade,
   jobit,
+  turf,
+  cook,
   tripguide,
 };
