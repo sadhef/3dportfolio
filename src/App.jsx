@@ -1,4 +1,5 @@
 import { BrowserRouter } from "react-router-dom";
+<<<<<<< HEAD
 import { useEffect, useState, lazy, Suspense } from "react";
 
 // Import critical components directly
@@ -41,22 +42,43 @@ const App = () => {
       setIsLoaded(true);
     }, 800);
     
+=======
+import { useEffect, useState } from "react";
+
+import { About, Contact, Experience, Hero, Navbar, Tech, Works, StarsCanvas } from "./components";
+import "./styles/imageFilters.css"; // Import our custom image filters
+import "./styles/heroStyles.css"; // Import hero-specific styles
+
+const App = () => {
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  useEffect(() => {
+    // Simple fade-in transition
+    const timer = setTimeout(() => {
+      setIsLoaded(true);
+    }, 500);
+
+>>>>>>> 01c168e7088bcdcf53c803816d4c8d2a176e79c0
     // Apply basic styling
     document.body.classList.add('black-white-theme');
     document.body.style.background = '#000000';
     
+<<<<<<< HEAD
     // Optimize page load
     window.addEventListener('load', () => {
       // Wait until fonts and other resources are loaded
       setIsLoaded(true);
     });
     
+=======
+>>>>>>> 01c168e7088bcdcf53c803816d4c8d2a176e79c0
     return () => {
       clearTimeout(timer);
       document.body.classList.remove('black-white-theme');
     };
   }, []);
 
+<<<<<<< HEAD
   // Simple intersection observer to load content as needed
   useEffect(() => {
     if (!hasMounted) return;
@@ -82,6 +104,8 @@ const App = () => {
     return () => observer.disconnect();
   }, [hasMounted]);
 
+=======
+>>>>>>> 01c168e7088bcdcf53c803816d4c8d2a176e79c0
   // Simple loading screen
   if (!isLoaded) {
     return (
@@ -89,7 +113,10 @@ const App = () => {
         <div className="text-white text-center">
           <h1 className="text-4xl font-bold mb-3">Mohammed Sadhef</h1>
           <p className="text-xl">Portfolio</p>
+<<<<<<< HEAD
           <div className="mt-6 w-12 h-12 border-t-2 border-white rounded-full animate-spin mx-auto"></div>
+=======
+>>>>>>> 01c168e7088bcdcf53c803816d4c8d2a176e79c0
         </div>
       </div>
     );
@@ -97,12 +124,20 @@ const App = () => {
 
   return (
     <BrowserRouter>
+<<<<<<< HEAD
       <div className='relative z-0'>
         {/* Critical rendering path components */}
+=======
+      {/* StarsCanvas background */}
+      <StarsCanvas />
+      
+      <div className='relative z-0'>
+>>>>>>> 01c168e7088bcdcf53c803816d4c8d2a176e79c0
         <div className='bg-transparent'>
           <Navbar />
           <Hero />
         </div>
+<<<<<<< HEAD
         
         {/* Lazy-loaded components with suspense fallbacks */}
         <Suspense fallback={<LoadingComponent />}>
@@ -126,6 +161,15 @@ const App = () => {
             <Contact />
           </div>
         </Suspense>
+=======
+        <About />
+        <Experience />
+        <Tech />
+        <Works />
+        <div className='relative z-0'>
+          <Contact />
+        </div>
+>>>>>>> 01c168e7088bcdcf53c803816d4c8d2a176e79c0
       </div>
       
       {/* Load StarsCanvas last since it's decorative */}

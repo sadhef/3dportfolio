@@ -61,12 +61,17 @@ const ProjectCard = ({
           
           <img
             src={image}
+<<<<<<< HEAD
             alt={name}
             className={`w-full h-full object-cover rounded-2xl filter grayscale ${isImageLoaded ? 'opacity-100' : 'opacity-0'}`}
             style={{ transition: 'opacity 0.3s ease-in-out' }}
             onLoad={handleImageLoad}
             onError={handleImageError}
             loading="lazy" // Use native lazy loading
+=======
+            alt='project_image'
+            className='w-full h-full object-cover rounded-2xl filter grayscale' // Added grayscale filter
+>>>>>>> 01c168e7088bcdcf53c803816d4c8d2a176e79c0
           />
 
           <div className='absolute inset-0 flex justify-end m-3 card-img_hover'>
@@ -152,4 +157,8 @@ const Works = () => {
   );
 };
 
+<<<<<<< HEAD
 export default SectionWrapper(Works, "projects");
+=======
+export default SectionWrapper(Works, "");
+>>>>>>> 01c168e7088bcdcf53c803816d4c8d2a176e79c0
