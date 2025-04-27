@@ -16,7 +16,6 @@ const StarsCanvas = lazy(() => import("./components/canvas/Stars").then(module =
 // Import custom styles
 import "./styles/imageFilters.css";
 import "./styles/heroStyles.css";
-import "./styles/performanceOptimization.css"; // Add the new performance CSS
 
 // Simple loading component
 const LoadingComponent = () => (
