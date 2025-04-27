@@ -8,7 +8,7 @@ import { Navbar, Hero } from "./components";
 // Import custom styles
 import "./styles/imageFilters.css";
 import "./styles/heroStyles.css";
-import "./styles/universal.css"; // Add the universal CSS
+import "./styles/universal-fixes.css"; // Add the universal fixes
 
 // Custom error boundary for better error handling
 class ErrorBoundary extends React.Component {
@@ -44,7 +44,7 @@ class ErrorBoundary extends React.Component {
   }
 }
 
-// Improved loading component
+// Loading component
 const LoadingComponent = () => (
   <div className="flex items-center justify-center w-full h-60">
     <div className="text-white text-center">
@@ -68,19 +68,15 @@ const StarsCanvas = lazy(() =>
 
 const App = () => {
   const [isLoaded, setIsLoaded] = useState(false);
-  const [visibleSections, setVisibleSections] = useState({
-    about: false,
-    experience: false,
-    tech: false,
-    works: false,
-    contact: false
-  });
   
-  // Mobile detection (but not browser-specific)
+  // Mobile detection for performance optimization
   const isMobile = window.innerWidth < 768;
 
   useEffect(() => {
-    // Set a timeout to ensure the app loads even if 'load' event doesn't fire
+    // Apply universal fixes from Safari
+    document.documentElement.classList.add('safari');
+    
+    // Set a timeout to ensure the app loads
     const timer = setTimeout(() => {
       setIsLoaded(true);
     }, 800);
@@ -99,52 +95,6 @@ const App = () => {
       window.removeEventListener('load', () => setIsLoaded(true));
     };
   }, []);
-
-  // Setup intersection observer for progressive loading
-  useEffect(() => {
-    if (!isLoaded) return;
-    
-    const observerOptions = {
-      root: null,
-      rootMargin: '0px',
-      threshold: 0.1
-    };
-    
-    const handleIntersection = (entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          const sectionId = entry.target.id;
-          if (sectionId && Object.keys(visibleSections).includes(sectionId)) {
-            setVisibleSections(prev => ({
-              ...prev,
-              [sectionId]: true
-            }));
-            
-            // Add visibility class for animation
-            entry.target.classList.add('section-visible');
-            
-            // Index cards for staggered animation
-            const cards = entry.target.querySelectorAll('.project-card');
-            cards.forEach((card, index) => {
-              card.style.setProperty('--index', index);
-              setTimeout(() => {
-                card.classList.add('card-visible');
-              }, index * 100);
-            });
-          }
-        }
-      });
-    };
-    
-    const observer = new IntersectionObserver(handleIntersection, observerOptions);
-    
-    // Observe section placeholder elements
-    document.querySelectorAll('.section-placeholder').forEach(el => {
-      observer.observe(el);
-    });
-    
-    return () => observer.disconnect();
-  }, [isLoaded, visibleSections]);
 
   // Simple loading screen
   if (!isLoaded) {
@@ -168,7 +118,7 @@ const App = () => {
           <Hero />
         </div>
         
-        {/* Sections with progressive loading */}
+        {/* About section */}
         <div id="about" className="section-placeholder">
           <ErrorBoundary>
             <Suspense fallback={<LoadingComponent />}>
@@ -177,6 +127,7 @@ const App = () => {
           </ErrorBoundary>
         </div>
         
+        {/* Experience section */}
         <div id="experience" className="section-placeholder">
           <ErrorBoundary>
             <Suspense fallback={<LoadingComponent />}>
@@ -185,6 +136,7 @@ const App = () => {
           </ErrorBoundary>
         </div>
         
+        {/* Tech section */}
         <div id="tech" className="section-placeholder">
           <ErrorBoundary>
             <Suspense fallback={<LoadingComponent />}>
@@ -193,8 +145,8 @@ const App = () => {
           </ErrorBoundary>
         </div>
         
-        {/* Works section with special handling */}
-        <div id="works" className="section-placeholder force-hardware-accel">
+        {/* Works section */}
+        <div id="works-container" className="section-placeholder safari-stacking-fix">
           <ErrorBoundary>
             <Suspense fallback={<LoadingComponent />}>
               <Works />
@@ -202,6 +154,7 @@ const App = () => {
           </ErrorBoundary>
         </div>
         
+        {/* Contact section */}
         <div id="contact" className="section-placeholder">
           <ErrorBoundary>
             <Suspense fallback={<LoadingComponent />}>
@@ -213,14 +166,20 @@ const App = () => {
         </div>
       </div>
       
-      {/* Simpler stars canvas for all browsers */}
-      <Suspense fallback={null}>
-        <StarsCanvas />
-      </Suspense>
+      {/* Simplified stars for all browsers */}
+      {!isMobile && (
+        <Suspense fallback={null}>
+          <StarsCanvas />
+        </Suspense>
+      )}
       
-      {/* Additional static background fallback if needed */}
+      {/* Static background for mobile */}
       {isMobile && (
-        <div className="fixed inset-0 z-[-2] bg-gradient-to-b from-black to-[#050505]"></div>
+        <div className="fixed inset-0 z-[-1] safari-bg">
+          <div className="absolute inset-0 bg-black"></div>
+          <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#ffffff_1px,transparent_1px)]" 
+               style={{backgroundSize: "40px 40px"}}></div>
+        </div>
       )}
     </BrowserRouter>
   );

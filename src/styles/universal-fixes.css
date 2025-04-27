@@ -1,0 +1,175 @@
+/* Universal fixes based on Safari solutions - for all browsers */
+/* Add this to src/styles/universal-fixes.css */
+
+/* Apply Safari fixes to all browsers */
+.works-section {
+  /* Force hardware acceleration */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  
+  /* Ensure proper rendering of flexbox */
+  display: block;
+}
+
+/* Fix flexbox rendering issues for all browsers */
+.safari-works-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.75rem;
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  .safari-works-grid {
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  }
+}
+
+/* Text truncation fixes */
+.safari-text-truncate {
+  display: block;
+  max-height: 8.4em; /* Approximately 6 lines */
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Card fixes */
+.safari-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  
+  /* Prevent flickering with hardware acceleration */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+}
+
+/* Improve image rendering */
+img {
+  /* Ensure proper image rendering */
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  
+  /* Remove filters which can cause issues */
+  filter: none !important;
+  -webkit-filter: none !important;
+}
+
+/* Section rendering fixes */
+.safari-section {
+  /* Create a new stacking context */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  isolation: isolate;
+  
+  /* Prevent margin collapsing */
+  padding-top: 1px;
+  margin-top: -1px;
+}
+
+/* Reduce heavy animations */
+.motion-reduce {
+  /* Simplify animations */
+  transition: opacity 0.3s ease !important;
+  animation: none !important;
+}
+
+/* Force proper height calculations */
+.safari-height-fix {
+  height: auto !important;
+  min-height: 100px;
+}
+
+/* Fix z-index stacking */
+.safari-stacking-fix {
+  isolation: isolate;
+  z-index: 1;
+  position: relative;
+}
+
+/* Force hardware acceleration for specific elements */
+.safari-hw-accel {
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* Simplify backdrop filters */
+.bg-black-100,
+.bg-tertiary {
+  background-color: rgba(26, 26, 26, 0.95) !important;
+}
+
+/* Force simpler background gradients */
+.black-gradient {
+  background: #000000 !important;
+}
+
+/* Flexbox fallbacks for grid */
+@media (max-width: 640px) {
+  .safari-works-grid {
+    display: flex;
+    flex-wrap: wrap;
+  }
+  
+  .safari-works-grid > * {
+    margin: 0.875rem;
+    width: calc(100% - 1.75rem);
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1023px) {
+  .safari-works-grid {
+    display: flex;
+    flex-wrap: wrap;
+  }
+  
+  .safari-works-grid > * {
+    margin: 0.875rem;
+    width: calc(50% - 1.75rem);
+  }
+}
+
+@media (min-width: 1024px) {
+  .safari-works-grid {
+    display: flex;
+    flex-wrap: wrap;
+  }
+  
+  .safari-works-grid > * {
+    margin: 0.875rem;
+    width: calc(33.333% - 1.75rem);
+  }
+}
+
+/* Ensure proper spacing */
+.safari-works-grid {
+  margin: 2rem -0.875rem;
+}
+
+/* Ensure projects have proper height */
+.project-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* Fix anchor link offset issues */
+html {
+  scroll-padding-top: 100px;
+}
+
+/* Force proper painting */
+.force-paint {
+  content: "";
+  display: table;
+}
+
+/* Optimize for performance */
+.optimize-rendering {
+  content-visibility: auto;
+}
