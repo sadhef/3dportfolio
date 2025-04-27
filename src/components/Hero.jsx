@@ -85,16 +85,6 @@ const Hero = () => {
               </span>
             ))}
           </motion.div>
-          
-          {/* Location and Education */}
-          <motion.div
-            variants={fadeIn("up", "tween", 0.7, 1)}
-            initial="hidden"
-            animate="show"
-            className="mt-8 text-secondary text-sm"
-          >
-            <p>Thalassery, Kerala, India | B.Tech in Computer Science (2020-2024)</p>
-          </motion.div>
         </div>
       </div>
       
