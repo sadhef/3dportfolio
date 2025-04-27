@@ -263,3 +263,78 @@ section {
   max-height: 8em;
   overflow: hidden;
 }
+
+.three-column-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* Force exactly 3 columns */
+  gap: 2rem;
+  width: 100%;
+}
+
+/* Card wrapper to ensure consistent sizing */
+.card-wrapper {
+  width: 100%;
+  height: 100%;
+}
+
+/* Project card styling */
+.project-card {
+  height: 100%;
+  background-color: #1a1a1a;
+  border-radius: 1rem;
+  overflow: hidden;
+  transition: transform 0.3s ease;
+  transform: translateZ(0); /* Force hardware acceleration */
+}
+
+.project-card:hover {
+  transform: translateY(-5px);
+}
+
+/* Description area with consistent height */
+.project-description {
+  max-height: 8.4em; /* Approximately 6 lines */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 6;
+  -webkit-box-orient: vertical;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+  .three-column-grid {
+    grid-template-columns: repeat(3, 1fr); /* Maintain 3 columns on medium screens */
+    gap: 1.5rem;
+  }
+}
+
+@media (max-width: 900px) {
+  .three-column-grid {
+    grid-template-columns: repeat(2, 1fr); /* 2 columns on tablet screens */
+    gap: 1.5rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .three-column-grid {
+    grid-template-columns: 1fr; /* Single column on mobile */
+    gap: 1.5rem;
+  }
+}
+
+/* Ensure section has consistent width */
+.consistent-section {
+  padding: 6rem 2rem;
+}
+
+.consistent-section .max-w-7xl {
+  width: 100%;
+  max-width: 1280px; /* Match other sections' max width */
+  margin: 0 auto;
+}
+
+/* Fix for Safari and other browsers */
+.works-section {
+  width: 100%;
+}

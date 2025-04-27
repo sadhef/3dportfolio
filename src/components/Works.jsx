@@ -16,13 +16,12 @@ const ProjectCard = ({
   source_code_link,
 }) => {
   return (
-    <div className="w-full sm:w-[360px] bg-tertiary p-5 rounded-2xl safari-card">
+    <div className="project-card w-full bg-tertiary p-5 rounded-2xl h-full flex flex-col">
       <div className="relative w-full h-[230px]">
         <img
           src={image}
           alt={name}
           className="w-full h-full object-cover rounded-2xl"
-          // No filter to ensure compatibility
         />
 
         <div className="absolute inset-0 flex justify-end m-3 card-img_hover">
@@ -39,9 +38,9 @@ const ProjectCard = ({
         </div>
       </div>
 
-      <div className="mt-5">
+      <div className="mt-5 flex-grow">
         <h3 className="text-white font-bold text-[24px]">{name}</h3>
-        <p className="mt-2 text-secondary text-[14px] safari-text-truncate">
+        <p className="mt-2 text-secondary text-[14px] project-description overflow-hidden">
           {description}
         </p>
       </div>
@@ -69,15 +68,6 @@ const Works = () => {
     setTimeout(() => {
       setIsLoaded(true);
     }, 100);
-    
-    // Force repaint for better compatibility
-    const worksSection = document.getElementById('projects');
-    if (worksSection) {
-      worksSection.style.display = 'none';
-      setTimeout(() => {
-        worksSection.style.display = 'block';
-      }, 50);
-    }
   }, []);
 
   return (
@@ -95,15 +85,16 @@ const Works = () => {
         </p>
       </div>
 
-      {/* Render projects with Safari-compatible grid */}
+      {/* Render projects with exactly three cards per row */}
       {isLoaded && (
-        <div className="mt-20 flex flex-wrap gap-7 safari-works-grid">
+        <div className="mt-20 three-column-grid">
           {projects.map((project, index) => (
-            <ProjectCard
-              key={`project-${index}`}
-              index={index}
-              {...project}
-            />
+            <div key={`project-${index}`} className="card-wrapper">
+              <ProjectCard
+                index={index}
+                {...project}
+              />
+            </div>
           ))}
         </div>
       )}
