@@ -3,83 +3,134 @@ import { useEffect, useState, lazy, Suspense } from "react";
 
 // Import critical components directly
 import { Navbar, Hero } from "./components";
-// Lazy load non-critical components
-const About = lazy(() => import("./components/About"));
-const Experience = lazy(() => import("./components/Experience"));
-const Tech = lazy(() => import("./components/Tech"));
-const Works = lazy(() => import("./components/Works"));
-const Contact = lazy(() => import("./components/Contact"));
-const StarsCanvas = lazy(() => import("./components/canvas/Stars").then(module => ({
-  default: module.default
-})));
 
-// Import custom styles
-import "./styles/imageFilters.css";
-import "./styles/heroStyles.css";
+// Custom error boundary for better error handling
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
 
-// Simple loading component
+  static getDerivedStateFromError(error) {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error("Component Error:", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="p-6 bg-black bg-opacity-50 text-white rounded-lg">
+          <h2 className="text-xl mb-2">Something went wrong</h2>
+          <button 
+            className="px-4 py-2 bg-white text-black rounded"
+            onClick={() => this.setState({ hasError: false })}
+          >
+            Try again
+          </button>
+        </div>
+      );
+    }
+
+    return this.props.children; 
+  }
+}
+
+// Improved loading component
 const LoadingComponent = () => (
   <div className="flex items-center justify-center w-full h-60">
     <div className="text-white text-center">
-      <p className="text-xl mb-2">Loading...</p>
-      <div className="w-12 h-12 border-t-2 border-white rounded-full animate-spin mx-auto"></div>
+      <div className="w-10 h-10 border-t-2 border-white rounded-full animate-spin mx-auto"></div>
+      <p className="text-sm mt-4">Loading content...</p>
     </div>
   </div>
 );
 
+// Progressive loading of components with priority
+const About = lazy(() => import("./components/About"));
+const Experience = lazy(() => import("./components/Experience"));
+const Tech = lazy(() => import("./components/Tech"));
+// Import the optimized Works component
+const Works = lazy(() => import("./components/Works"));
+const Contact = lazy(() => import("./components/Contact"));
+const StarsCanvas = lazy(() => 
+  import("./components/canvas").then(module => ({
+    default: module.StarsCanvas
+  }))
+);
+
+// Import custom styles
+import "./styles/imageFilters.css";
+import "./styles/heroStyles.css";
+import React from "react";
+
 const App = () => {
   const [isLoaded, setIsLoaded] = useState(false);
-  const [hasMounted, setHasMounted] = useState(false);
+  const [visibleSections, setVisibleSections] = useState({
+    about: false,
+    experience: false,
+    tech: false,
+    works: false,
+    contact: false
+  });
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
   useEffect(() => {
-    // Indicate component has mounted
-    setHasMounted(true);
-    
-    // Simple fade-in transition - slightly delayed for better performance
+    // Set a timeout to ensure the app loads even if 'load' event doesn't fire
     const timer = setTimeout(() => {
       setIsLoaded(true);
-    }, 800);
+    }, isMobile ? 1200 : 800); // Longer timeout for mobile
+    
+    // Listen for page load
+    window.addEventListener('load', () => {
+      setIsLoaded(true);
+      clearTimeout(timer);
+    });
     
     // Apply basic styling
-    document.body.classList.add('black-white-theme');
     document.body.style.background = '#000000';
-    
-    // Optimize page load
-    window.addEventListener('load', () => {
-      // Wait until fonts and other resources are loaded
-      setIsLoaded(true);
-    });
     
     return () => {
       clearTimeout(timer);
-      document.body.classList.remove('black-white-theme');
+      window.removeEventListener('load', () => setIsLoaded(true));
     };
-  }, []);
+  }, [isMobile]);
 
-  // Simple intersection observer to load content as needed
+  // Setup intersection observer for progressive loading
   useEffect(() => {
-    if (!hasMounted) return;
+    if (!isLoaded) return;
     
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            // When a section comes into view, add a class that triggers content loading
-            entry.target.classList.add('section-visible');
-            observer.unobserve(entry.target); // Only trigger once
+    const observerOptions = {
+      root: null,
+      rootMargin: '0px',
+      threshold: 0.1
+    };
+    
+    const handleIntersection = (entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const sectionId = entry.target.id;
+          if (sectionId && Object.keys(visibleSections).includes(sectionId)) {
+            setVisibleSections(prev => ({
+              ...prev,
+              [sectionId]: true
+            }));
           }
-        });
-      },
-      { threshold: 0.1 } // Trigger when 10% of element is visible
-    );
+        }
+      });
+    };
     
-    // Observe each section
-    document.querySelectorAll('section').forEach(section => {
-      observer.observe(section);
+    const observer = new IntersectionObserver(handleIntersection, observerOptions);
+    
+    // Observe section placeholder elements
+    document.querySelectorAll('.section-placeholder').forEach(el => {
+      observer.observe(el);
     });
     
     return () => observer.disconnect();
-  }, [hasMounted]);
+  }, [isLoaded, visibleSections]);
 
   // Simple loading screen
   if (!isLoaded) {
@@ -103,34 +154,69 @@ const App = () => {
           <Hero />
         </div>
         
-        {/* Lazy-loaded components with suspense fallbacks */}
-        <Suspense fallback={<LoadingComponent />}>
-          <About />
-        </Suspense>
+        {/* About section */}
+        <div id="about" className="section-placeholder">
+          <ErrorBoundary>
+            <Suspense fallback={<LoadingComponent />}>
+              {(visibleSections.about || !isMobile) && <About />}
+            </Suspense>
+          </ErrorBoundary>
+        </div>
         
-        <Suspense fallback={<LoadingComponent />}>
-          <Experience />
-        </Suspense>
+        {/* Experience section */}
+        <div id="experience" className="section-placeholder">
+          <ErrorBoundary>
+            <Suspense fallback={<LoadingComponent />}>
+              {(visibleSections.experience || !isMobile) && <Experience />}
+            </Suspense>
+          </ErrorBoundary>
+        </div>
         
-        <Suspense fallback={<LoadingComponent />}>
-          <Tech />
-        </Suspense>
+        {/* Tech section */}
+        <div id="tech" className="section-placeholder">
+          <ErrorBoundary>
+            <Suspense fallback={<LoadingComponent />}>
+              {(visibleSections.tech || !isMobile) && <Tech />}
+            </Suspense>
+          </ErrorBoundary>
+        </div>
         
-        <Suspense fallback={<LoadingComponent />}>
-          <Works />
-        </Suspense>
+        {/* Works section - high priority */}
+        <div id="works" className="section-placeholder">
+          <ErrorBoundary>
+            <Suspense fallback={<LoadingComponent />}>
+              <Works />
+            </Suspense>
+          </ErrorBoundary>
+        </div>
         
-        <Suspense fallback={<LoadingComponent />}>
-          <div className='relative z-0'>
-            <Contact />
-          </div>
-        </Suspense>
+        {/* Contact section */}
+        <div id="contact" className="section-placeholder">
+          <ErrorBoundary>
+            <Suspense fallback={<LoadingComponent />}>
+              {(visibleSections.contact || !isMobile) && (
+                <div className='relative z-0'>
+                  <Contact />
+                </div>
+              )}
+            </Suspense>
+          </ErrorBoundary>
+        </div>
       </div>
       
-      {/* Load StarsCanvas last since it's decorative */}
-      <Suspense fallback={null}>
-        <StarsCanvas />
-      </Suspense>
+      {/* Load StarsCanvas with reduced rendering for mobile */}
+      {!isMobile && (
+        <Suspense fallback={null}>
+          <StarsCanvas />
+        </Suspense>
+      )}
+      
+      {/* Simplified stars for mobile */}
+      {isMobile && (
+        <div className="fixed inset-0 bg-black z-[-1]">
+          <div className="fixed opacity-30 inset-0 bg-[radial-gradient(white,_rgba(255,255,255,0)_70%)]"></div>
+        </div>
+      )}
     </BrowserRouter>
   );
 };
