@@ -143,7 +143,7 @@ const projects = [
       },
     ],
     image: turf,
-    source_code_link: "https://rifield-web-appuser65d9.vercel.app/",
+    source_code_link: "https://rifield-web-appuser-65d9.vercel.app",
   },
   {
     name: "COokiFy",
