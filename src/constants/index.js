@@ -15,6 +15,7 @@ import {
   git,
   figma,
   docker,
+  kubctl,
   meta,
   biztras,
   tesla,
@@ -103,6 +104,10 @@ const technologies = [
   {
     name: "docker",
     icon: docker,
+  },
+  {
+    name: "Kubernetes",
+    icon: kubctl,
   },
 ];
 
