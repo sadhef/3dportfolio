@@ -49,16 +49,6 @@ const Stars = () => {
   );
 };
 
-// Fallback static stars for when canvas fails
-const StaticStarsBackground = () => {
-  return (
-    <div className="fixed inset-0 z-[-1] static-stars-bg">
-      <div className="absolute inset-0 bg-black"></div>
-      <div className="absolute inset-0 opacity-30 stars-pattern"></div>
-    </div>
-  );
-};
-
 // Main component with fallback
 const StarsCanvas = () => {
   const [canvasSupported, setCanvasSupported] = useState(true);
@@ -85,7 +75,12 @@ const StarsCanvas = () => {
   
   // Use static fallback if WebGL not supported
   if (!canvasSupported) {
-    return <StaticStarsBackground />;
+    return (
+      <div className="fixed inset-0 z-[-1] static-stars-bg">
+        <div className="absolute inset-0 bg-black"></div>
+        <div className="absolute inset-0 opacity-30 stars-pattern"></div>
+      </div>
+    );
   }
   
   return (
