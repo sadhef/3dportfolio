@@ -1,4 +1,4 @@
-// generateSitemap.js
+// generateSitemap.js - ES Module version
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -26,7 +26,7 @@ const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 
 // Write sitemap to file
 try {
-  // Make sure the public directory exists
+  // For Vite, we need to write to the public directory
   const publicDir = path.join(__dirname, 'public');
   if (!fs.existsSync(publicDir)) {
     fs.mkdirSync(publicDir, { recursive: true });
