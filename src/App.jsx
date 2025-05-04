@@ -8,10 +8,14 @@ import SEO from "./components/SEO";
 // Import critical components directly
 import { Navbar, Hero } from "./components";
 
+// Import CodeTypingAnimation component
+import CodeTypingAnimation from "./components/CodeTypingAnimation";
+
 // Import custom styles
 import "./styles/imageFilters.css";
 import "./styles/heroStyles.css";
-import "./styles/universal-fixes.css"; // Add the universal fixes
+import "./styles/universal-fixes.css"; 
+import "./styles/CodeAnimationStyles.css"; // Code animation styles
 
 // Custom error boundary for better error handling
 class ErrorBoundary extends React.Component {
@@ -70,7 +74,8 @@ const StarsCanvas = lazy(() =>
 );
 
 const App = () => {
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [showCodeAnimation, setShowCodeAnimation] = useState(true);
   
   // Mobile detection for performance optimization
   const isMobile = window.innerWidth < 768;
@@ -81,12 +86,12 @@ const App = () => {
     
     // Set a timeout to ensure the app loads
     const timer = setTimeout(() => {
-      setIsLoaded(true);
-    }, 800);
+      setIsLoading(false);
+    }, 500);
     
     // Listen for page load
     window.addEventListener('load', () => {
-      setIsLoaded(true);
+      setIsLoading(false);
       clearTimeout(timer);
     });
     
@@ -95,17 +100,20 @@ const App = () => {
     
     return () => {
       clearTimeout(timer);
-      window.removeEventListener('load', () => setIsLoaded(true));
+      window.removeEventListener('load', () => setIsLoading(true));
     };
   }, []);
 
+  // Handle animation completion
+  const handleAnimationComplete = () => {
+    setShowCodeAnimation(false);
+  };
+
   // Simple loading screen
-  if (!isLoaded) {
+  if (isLoading) {
     return (
       <div className="fixed inset-0 bg-black flex items-center justify-center z-50">
         <div className="text-white text-center">
-          <h1 className="text-4xl font-bold mb-3">Mohammed Sadhef</h1>
-          <p className="text-xl">Portfolio</p>
           <div className="mt-6 w-12 h-12 border-t-2 border-white rounded-full animate-spin mx-auto"></div>
         </div>
       </div>
@@ -116,6 +124,11 @@ const App = () => {
     <BrowserRouter>
       {/* Add SEO component here */}
       <SEO />
+      
+      {/* Show coding animation when app first loads */}
+      {showCodeAnimation && (
+        <CodeTypingAnimation onComplete={handleAnimationComplete} />
+      )}
       
       <div className='relative z-0'>
         {/* Critical rendering path components */}

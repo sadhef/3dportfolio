@@ -1,0 +1,113 @@
+.code-animation-container {
+    perspective: 1000px;
+  }
+  
+  .code-editor {
+    transform-style: preserve-3d;
+    transition: transform 0.5s ease-out;
+  }
+  
+  .code-editor:hover {
+    transform: rotateX(5deg) rotateY(5deg);
+  }
+  
+  .line-number {
+    color: #6c7280;
+    padding-right: 1rem;
+    user-select: none;
+    text-align: right;
+  }
+  
+  .typing-cursor {
+    display: inline-block;
+    width: 2px;
+    height: 1.2em;
+    background-color: #fff;
+    margin-left: 2px;
+    vertical-align: text-bottom;
+    animation: blink 1s step-end infinite;
+  }
+  
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+  
+  @keyframes glow {
+    0%, 100% { box-shadow: 0 0 5px rgba(74, 222, 128, 0.2); }
+    50% { box-shadow: 0 0 15px rgba(74, 222, 128, 0.6); }
+  }
+  
+  .terminal-dots {
+    display: flex;
+    gap: 6px;
+  }
+  
+  .terminal-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+  }
+  
+  .terminal-dot.red { background-color: #ff5f57; }
+  .terminal-dot.yellow { background-color: #ffbd2e; }
+  .terminal-dot.green { background-color: #28c941; }
+  
+  .terminal-header {
+    background-color: #1e1e1e;
+    padding: 8px 16px;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    display: flex;
+    align-items: center;
+  }
+  
+  .terminal-body {
+    background-color: #0d1117;
+    color: #e6edf3;
+    padding: 16px;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+    font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+    overflow-x: auto;
+    white-space: pre;
+  }
+  
+  /* Syntax highlighting */
+  .keyword { color: #ff79c6; }
+  .string { color: #f1fa8c; }
+  .number { color: #bd93f9; }
+  .function { color: #50fa7b; }
+  .comment { color: #6272a4; }
+  .operator { color: #ff79c6; }
+  .property { color: #8be9fd; }
+  .punctuation { color: #f8f8f2; }
+  .variable { color: #f8f8f2; }
+  .bracket { color: #f8f8f2; }
+  
+  /* Fade in animations */
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  
+  .fade-in {
+    animation: fadeIn 0.3s ease-in forwards;
+  }
+  
+  .fade-in-slow {
+    animation: fadeIn 0.6s ease-in forwards;
+  }
+  
+  /* Glow effect for "Hello World" text */
+  .hello-world-text {
+    color: #7DF9FF;
+    text-shadow: 0 0 5px rgba(125, 249, 255, 0.8);
+    animation: glow 2s ease-in-out infinite;
+  }
+  
+  /* Terminal glow effect on hover */
+  .terminal-container:hover {
+    filter: drop-shadow(0 0 8px rgba(74, 222, 128, 0.3));
+    transition: filter 0.3s ease;
+  }
