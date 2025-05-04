@@ -16,11 +16,10 @@ const CodeTypingAnimation = ({ onComplete }) => {
     '  name: "Mohammed Sadhef",',
     '  role: "Full Stack Developer",',
     '  greeting: () => {',
-    '    return "Hello World! Welcome to my portfolio";',
+    '    return "Hello World!";',
     '  }',
     '};',
-    '',
-    'portfolio.greeting();'
+    ''
   ];
 
   // Typing effect
@@ -118,17 +117,7 @@ const CodeTypingAnimation = ({ onComplete }) => {
       </div>
     ) : null;
 
-    // Result of the code execution
-    const resultLine = showResult ? (
-      <div key="result" className="flex mt-2 fade-in-slow">
-        <span className="line-number">{'>'}</span>
-        <div className="font-mono text-sm sm:text-base flex-1">
-          <span className="hello-world-text">"Hello World! Welcome to my portfolio"</span>
-        </div>
-      </div>
-    ) : null;
-
-    return [...completedLines, currentLine, resultLine];
+    return [...completedLines, currentLine];
   };
 
   return (
