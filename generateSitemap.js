@@ -1,6 +1,11 @@
 // generateSitemap.js
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+// Get current directory path in ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Update with your website URL
 const BASE_URL = 'https://sadhef.info';
@@ -21,7 +26,13 @@ const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 
 // Write sitemap to file
 try {
-  fs.writeFileSync(path.join(__dirname, 'public', 'sitemap.xml'), sitemap);
+  // Make sure the public directory exists
+  const publicDir = path.join(__dirname, 'public');
+  if (!fs.existsSync(publicDir)) {
+    fs.mkdirSync(publicDir, { recursive: true });
+  }
+  
+  fs.writeFileSync(path.join(publicDir, 'sitemap.xml'), sitemap);
   console.log('Sitemap generated successfully!');
 } catch (err) {
   console.error('Error generating sitemap:', err);

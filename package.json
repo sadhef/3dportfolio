@@ -5,9 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "node generateSitemap.js && vite build",
-    "preview": "vite preview",
-    "generate-sitemap": "node generateSitemap.js"
+    "generate-sitemap": "node generateSitemap.js",
+    "prebuild": "node generateSitemap.js || echo 'Sitemap generation failed, continuing with build'",
+    "build": "vite build",
+    "preview": "vite preview"
   },
   "dependencies": {
     "@emailjs/browser": "^3.10.0",
