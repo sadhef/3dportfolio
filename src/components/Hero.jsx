@@ -24,7 +24,7 @@ const Hero = () => {
       
       <div className="container relative z-10 px-6 mx-auto flex flex-col items-center">
         <div className="flex flex-col items-center justify-center text-center">
-          {/* Profile line */}
+          {/* SEO-optimized header with proper heading tags */}
           <motion.div 
             variants={fadeIn("down", "tween", 0.2, 1)}
             initial="hidden"
@@ -36,7 +36,7 @@ const Hero = () => {
             <div className="h-[1px] w-6 bg-white-100 ml-2 opacity-60" />
           </motion.div>
           
-          {/* Name with elegant styling */}
+          {/* Name with elegant styling - using h1 for SEO */}
           <motion.h1 
             variants={fadeIn("down", "tween", 0.3, 1)}
             initial="hidden"
@@ -46,15 +46,16 @@ const Hero = () => {
             Mohammed <span className="text-white relative inline-block after:content-[''] after:absolute after:bottom-1 after:left-0 after:w-full after:h-[1px] after:bg-white after:opacity-30">Sadhef</span>
           </motion.h1>
           
-          {/* Subtitle based on CV */}
+          {/* SEO-optimized subtitle with keywords */}
           <motion.p 
             variants={fadeIn("down", "tween", 0.4, 1)}
             initial="hidden"
             animate="show"
             className="text-secondary text-lg max-w-2xl text-center leading-relaxed font-light mt-3"
           >
-            Highly motivated self-starter specializing in MERN stack development, 
-            with experience in data science, AI integration, and mobile app development.
+            Highly motivated Full Stack Developer specializing in MERN stack (MongoDB, Express.js, React.js, Node.js), 
+            Python, JavaScript and AI integration. Building responsive web applications and providing custom solutions
+            for modern businesses.
           </motion.p>
           
           {/* CTA buttons */}
@@ -72,7 +73,7 @@ const Hero = () => {
             </a>
           </motion.div>
           
-          {/* Tech keywords from CV */}
+          {/* Tech keywords from CV - good for SEO */}
           <motion.div 
             variants={fadeIn("up", "tween", 0.6, 1)}
             initial="hidden"

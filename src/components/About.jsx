@@ -23,7 +23,7 @@ const ServiceCard = ({ index, title, icon }) => (
       >
         <img
           src={icon}
-          alt={title}
+          alt={`${title} icon`} // Improved alt text for accessibility and SEO
           className='w-16 h-16 object-contain filter grayscale' // Added grayscale filter
         />
 
@@ -47,6 +47,7 @@ const About = () => {
         variants={fadeIn("", "", 0.1, 1)}
         className='mt-4 text-secondary text-[17px] max-w-3xl leading-[30px]'
       >
+        {/* SEO-optimized content with keywords */}
         I am a highly motivated self-starter Full Stack Developer with experience in dynamic and fast-paced environments. 
         My expertise spans the MERN stack (MongoDB, Express.js, React.js, and Node.js) with proficiency in PostgreSQL 
         for relational database management. I've integrated Python-based data science, AI, and machine learning capabilities
@@ -58,9 +59,9 @@ const About = () => {
         real-world problems. I'm eager to contribute to an organization that values technical excellence and fosters professional growth.
       </motion.p>
 
-      <div className='mt-20 flex flex-wrap gap-10'>
+      <div className='mt-20 flex flex-wrap justify-center gap-10'>
         {services.map((service, index) => (
-          <ServiceCard key={service.title} index={index} {...service} />
+          <ServiceCard key={`service-${index}`} index={index} {...service} />
         ))}
       </div>
     </>

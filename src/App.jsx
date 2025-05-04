@@ -2,6 +2,9 @@ import { BrowserRouter } from "react-router-dom";
 import { useEffect, useState, lazy, Suspense } from "react";
 import React from "react";
 
+// Import SEO component
+import SEO from "./components/SEO";
+
 // Import critical components directly
 import { Navbar, Hero } from "./components";
 
@@ -111,6 +114,9 @@ const App = () => {
 
   return (
     <BrowserRouter>
+      {/* Add SEO component here */}
+      <SEO />
+      
       <div className='relative z-0'>
         {/* Critical rendering path components */}
         <div className='bg-transparent'>
