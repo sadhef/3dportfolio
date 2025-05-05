@@ -13,20 +13,17 @@ import "./styles/imageFilters.css";
 import "./styles/heroStyles.css";
 import "./styles/universal-fixes.css"; 
 
-// Performance monitoring utility
-const perfLogger = {
-  mark: (name) => {
-    if (process.env.NODE_ENV === 'development') {
-      performance.mark(name);
-    }
-  },
-  measure: (name, startMark, endMark) => {
-    if (process.env.NODE_ENV === 'development') {
-      performance.measure(name, startMark, endMark);
-      console.log(`Performance: ${name}`, performance.getEntriesByName(name)[0].duration);
-    }
-  }
-};
+// Lazy load components for better performance
+const About = lazy(() => import("./components/About"));
+const Experience = lazy(() => import("./components/Experience"));
+const Tech = lazy(() => import("./components/Tech"));
+const Works = lazy(() => import("./components/Works"));
+const Contact = lazy(() => import("./components/Contact"));
+const StarsCanvas = lazy(() => 
+  import("./components/canvas").then(module => ({
+    default: module.StarsCanvas
+  }))
+);
 
 // Custom error boundary for better error handling
 class ErrorBoundary extends React.Component {
@@ -41,7 +38,6 @@ class ErrorBoundary extends React.Component {
 
   componentDidCatch(error, errorInfo) {
     console.error("Component Error:", error, errorInfo);
-    // Here you could add error tracking (e.g., Sentry)
   }
 
   render() {
@@ -74,73 +70,42 @@ const LoadingComponent = () => (
   </div>
 );
 
-// Progressive loading of components with configurable loading priorities
-const About = lazy(() => {
-  perfLogger.mark('about-start');
-  return import("./components/About").then(module => {
-    perfLogger.mark('about-end');
-    perfLogger.measure('about-load-time', 'about-start', 'about-end');
-    return module;
-  });
-});
-
-const Experience = lazy(() => import("./components/Experience"));
-const Tech = lazy(() => import("./components/Tech"));
-const Works = lazy(() => import("./components/Works"));
-const Contact = lazy(() => import("./components/Contact"));
-const StarsCanvas = lazy(() => 
-  import("./components/canvas").then(module => ({
-    default: module.StarsCanvas
-  }))
-);
-
-
 const App = () => {
   const [isLoading, setIsLoading] = useState(true);
-  const [showCodeAnimation, setShowCodeAnimation] = useState(true);
   const [hasInteracted, setHasInteracted] = useState(false);
   
   // Mobile detection for performance optimization
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  );
+  const [isMobile, setIsMobile] = useState(false);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
-  // Track initial page load performance
+  // Initialize device detection on mount
   useEffect(() => {
-    // Register performance observer for metrics reporting
-    if ('PerformanceObserver' in window) {
-      try {
-        const observer = new PerformanceObserver((list) => {
-          const lcp = list.getEntries()[0];
-          console.log('LCP:', lcp?.startTime);
-        });
-        observer.observe({ type: 'largest-contentful-paint', buffered: true });
-      } catch (e) {
-        console.error('Performance observer error:', e);
-      }
-    }
-
-    // Apply universal fixes
-    document.documentElement.classList.add('safari-fixes');
-    
-    // Listen for viewport changes
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
+    // Check if device is mobile
+    const checkMobile = () => {
+      const mobile = window.innerWidth < 768 || 
+                    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      setIsMobile(mobile);
     };
     
-    window.addEventListener('resize', handleResize);
+    // Check if user prefers reduced motion
+    const checkReducedMotion = () => {
+      setPrefersReducedMotion(
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      );
+    };
     
-    // Set a timeout to ensure the app loads within reasonable time
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 2000);
+    // Run checks initially
+    checkMobile();
+    checkReducedMotion();
     
-    // Listen for page load
-    window.addEventListener('load', () => {
-      setIsLoading(false);
-      clearTimeout(timer);
-    });
+    // Set up listeners for changes
+    window.addEventListener('resize', checkMobile);
+    
+    // Listen for media query changes
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener('change', checkReducedMotion);
+    }
     
     // Track user interaction
     const handleInteraction = () => {
@@ -150,29 +115,23 @@ const App = () => {
     window.addEventListener('click', handleInteraction);
     window.addEventListener('scroll', handleInteraction);
     
-    // Apply basic styling
-    document.body.style.background = '#000000';
+    // Mark app as loaded after a short delay
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1500);
     
+    // Clean up event listeners
     return () => {
       clearTimeout(timer);
-      window.removeEventListener('load', () => setIsLoading(false));
-      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('resize', checkMobile);
       window.removeEventListener('click', handleInteraction);
       window.removeEventListener('scroll', handleInteraction);
+      
+      if (mediaQuery.removeEventListener) {
+        mediaQuery.removeEventListener('change', checkReducedMotion);
+      }
     };
   }, []);
-
-  // Skip animation for users who prefer reduced motion
-  useEffect(() => {
-    if (prefersReducedMotion) {
-      setShowCodeAnimation(false);
-    }
-  }, [prefersReducedMotion]);
-
-  // Handle animation completion
-  const handleAnimationComplete = () => {
-    setShowCodeAnimation(false);
-  };
 
   // Simple loading screen with progressive enhancement
   if (isLoading) {
@@ -191,13 +150,6 @@ const App = () => {
       {/* Add SEO component */}
       <SEO />
       
-      {/* Show coding animation when app first loads, but only if animations are acceptable */}
-      {showCodeAnimation && !prefersReducedMotion && (
-        <Suspense fallback={null}>
-          <CodeTypingAnimation onComplete={handleAnimationComplete} />
-        </Suspense>
-      )}
-      
       <div className='relative z-0'>
         {/* Critical rendering path components */}
         <div className='bg-transparent'>
@@ -215,7 +167,7 @@ const App = () => {
         </div>
         
         {/* Experience section */}
-        <div id="work" className="section-placeholder"> {/* Changed to "work" to match navLink ID */}
+        <div id="work" className="section-placeholder">
           <ErrorBoundary>
             <Suspense fallback={<LoadingComponent />}>
               <Experience />
@@ -224,7 +176,7 @@ const App = () => {
         </div>
         
         {/* Tech section */}
-        <div id="tech" className="section-placeholder">
+        <div className="section-placeholder">
           <ErrorBoundary>
             <Suspense fallback={<LoadingComponent />}>
               <Tech />
@@ -233,7 +185,7 @@ const App = () => {
         </div>
         
         {/* Works section */}
-        <div id="projects" className="section-placeholder safari-stacking-fix"> {/* Added ID for direct navigation */}
+        <div id="projects" className="section-placeholder safari-stacking-fix">
           <ErrorBoundary>
             <Suspense fallback={<LoadingComponent />}>
               <Works />
@@ -265,7 +217,7 @@ const App = () => {
         <div className="fixed inset-0 z-[-1] safari-bg">
           <div className="absolute inset-0 bg-black"></div>
           <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#ffffff_1px,transparent_1px)]" 
-               style={{backgroundSize: "40px 40px"}}></div>
+               style={{backgroundSize: "20px 20px"}}></div>
         </div>
       )}
     </BrowserRouter>

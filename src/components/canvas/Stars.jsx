@@ -4,54 +4,40 @@ import { Points, PointMaterial, Preload } from "@react-three/drei";
 import * as random from "maath/random/dist/maath-random.esm";
 
 // Highly optimized Stars component with memory management
-const StarsPoints = ({ count = 1000, depth = 50 }) => {
+const StarsPoints = ({ count = 500 }) => { // Reduced count for mobile
   const ref = useRef();
-  const [isVisible, setIsVisible] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
+  
+  // Check if device is mobile on mount
+  useEffect(() => {
+    setIsMobile(window.innerWidth < 768);
+    
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
   
   // Generate stars only once with useMemo and appropriate size based on device
   const sphere = useMemo(() => {
-    // Detect device capabilities
-    const isLowEnd = navigator.hardwareConcurrency <= 4 || 
-                     /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    
-    // Adjust count based on device capabilities
-    const adjustedCount = isLowEnd ? Math.floor(count * 0.5) : count;
-    
+    // Reduce count significantly for mobile
+    const adjustedCount = isMobile ? Math.min(250, count) : count;
     return random.inSphere(new Float32Array(adjustedCount * 3), { radius: 1.2 });
-  }, [count]);
+  }, [count, isMobile]);
   
-  // Throttle animation frames for better performance
+  // Use a more efficient animation loop with rate limiting
   useFrame((state, delta) => {
-    // Skip frames based on delta to maintain consistent speed across devices
-    if (!ref.current || delta > 0.1) return;
+    if (!ref.current) return;
     
-    ref.current.rotation.x -= delta * 0.02; // Slow rotation
-    ref.current.rotation.y -= delta * 0.03;
+    // Only update every other frame on mobile for better performance
+    if (isMobile && state.clock.elapsedTime % 2 < 1) return;
+    
+    // Use smaller rotation values for more subtle effect
+    ref.current.rotation.x -= delta * 0.01;
+    ref.current.rotation.y -= delta * 0.01;
   });
-
-  // Visibility observer for performance
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        setIsVisible(entry.isIntersecting);
-      },
-      { threshold: 0.1 }
-    );
-    
-    const container = document.querySelector('.stars-canvas-container');
-    if (container) {
-      observer.observe(container);
-    }
-    
-    return () => {
-      if (container) {
-        observer.unobserve(container);
-      }
-    };
-  }, []);
-  
-  // Don't render if not visible
-  if (!isVisible) return null;
 
   return (
     <group rotation={[0, 0, Math.PI / 4]}>
@@ -60,11 +46,6 @@ const StarsPoints = ({ count = 1000, depth = 50 }) => {
         positions={sphere} 
         stride={3} 
         frustumCulled={true}
-        // Only update when necessary
-        matrixAutoUpdate={false}
-        onAfterRender={(renderer) => {
-          ref.current.updateMatrix();
-        }}
       >
         <PointMaterial
           transparent
@@ -72,81 +53,81 @@ const StarsPoints = ({ count = 1000, depth = 50 }) => {
           size={0.002}
           sizeAttenuation={true}
           depthWrite={false}
-          toneMapped={false} // Better performance
         />
       </Points>
     </group>
   );
 };
 
-// WebGL detector
-const hasWebGL = () => {
-  try {
-    const canvas = document.createElement('canvas');
-    return !!(window.WebGLRenderingContext && 
-      (canvas.getContext('webgl') || canvas.getContext('experimental-webgl')));
-  } catch (e) {
-    return false;
-  }
-};
-
 // Main component with comprehensive fallbacks
 const StarsCanvas = () => {
-  const [webGLSupported] = useState(hasWebGL());
-  const [loaded, setLoaded] = useState(false);
-  const [hasReducedMotion] = useState(
-    window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
-  );
+  const [canRender, setCanRender] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   
   useEffect(() => {
-    // Only load stars after critical content is rendered
-    const timer = setTimeout(() => {
-      setLoaded(true);
-    }, 1000);
+    // Check for WebGL support
+    const hasWebGL = () => {
+      try {
+        const canvas = document.createElement('canvas');
+        return !!(window.WebGLRenderingContext && 
+          (canvas.getContext('webgl') || canvas.getContext('experimental-webgl')));
+      } catch (e) {
+        return false;
+      }
+    };
     
-    return () => clearTimeout(timer);
+    // Check device capabilities
+    const checkDevice = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      
+      // Only render stars on non-mobile devices with WebGL support
+      const shouldRender = hasWebGL() && !mobile;
+      setCanRender(shouldRender);
+    };
+    
+    // Check device on mount
+    checkDevice();
+    
+    // Listen for resize events
+    window.addEventListener('resize', checkDevice);
+    return () => window.removeEventListener('resize', checkDevice);
   }, []);
   
-  // Don't render anything if user prefers reduced motion
-  if (hasReducedMotion) {
+  // Don't render anything on mobile
+  if (isMobile) {
     return (
       <div className="fixed inset-0 z-[-1] static-stars-bg">
         <div className="absolute inset-0 bg-black"></div>
         <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#ffffff_1px,transparent_1px)]" 
-             style={{backgroundSize: "40px 40px"}}></div>
+             style={{backgroundSize: "20px 20px"}}></div>
       </div>
     );
   }
   
-  // Static fallback if WebGL not supported
-  if (!webGLSupported) {
+  // Don't render if WebGL isn't supported
+  if (!canRender) {
     return (
       <div className="fixed inset-0 z-[-1] static-stars-bg">
         <div className="absolute inset-0 bg-black"></div>
         <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#ffffff_1px,transparent_1px)]" 
-             style={{backgroundSize: "40px 40px"}}></div>
+             style={{backgroundSize: "30px 30px"}}></div>
       </div>
     );
   }
   
-  // Don't render until ready
-  if (!loaded) return null;
-  
   return (
-    <div className='w-full h-full fixed inset-0 z-[-1] pointer-events-none stars-canvas-container'>
+    <div className='w-full h-full fixed inset-0 z-[-1] pointer-events-none'>
       <Canvas 
         camera={{ position: [0, 0, 1] }}
-        dpr={[0.6, 1.5]} // Dynamic resolution based on device
+        dpr={[0.5, 1.5]} // Lower resolution for better performance
         frameloop="demand" // Only render when needed
         gl={{ 
           powerPreference: "default", 
           antialias: false, 
           stencil: false,
-          depth: false,
-          alpha: true,
+          depth: false
         }}
-        style={{ background: 'transparent' }}
-        performance={{ min: 0.5 }} // Allow performance scaling
       >
         <Suspense fallback={null}>
           <StarsPoints />
