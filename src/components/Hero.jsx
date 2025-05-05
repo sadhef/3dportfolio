@@ -1,34 +1,87 @@
-import React, { useState, useEffect } from "react";
-import { motion, useAnimation } from "framer-motion";
+import React, { useState, useEffect, useRef } from "react";
+import { motion, useAnimation, useScroll, useTransform } from "framer-motion";
 import { styles } from "../styles";
 import { fadeIn } from "../utils/motion";
 
-// Optimized Hero component with better animations and SEO
+// Enhanced Hero component with scroll animation for the name
 const Hero = () => {
   const [loaded, setLoaded] = useState(false);
   const controls = useAnimation();
+  const nameRef = useRef(null);
   
-  // Calculate current experience (for SEO accuracy)
-  const getExperienceYears = () => {
-    const startDate = new Date(2022, 0, 1); // Replace with your actual start date
-    const currentDate = new Date();
-    return Math.floor((currentDate - startDate) / (365.25 * 24 * 60 * 60 * 1000));
-  };
+  // Detect reduced motion preference
+  const prefersReducedMotion = window.matchMedia?.(
+    '(prefers-reduced-motion: reduce)'
+  ).matches;
+  
+  // Use scroll position to animate the name
+  const { scrollY } = useScroll();
+  
+  // Transform X position based on scroll direction
+  // The name will move left when scrolling down and right when scrolling up
+  const nameX = useTransform(
+    scrollY, 
+    [0, 300], // Scroll values range
+    [0, -200] // Transform from center (0) to -200px (left) when scrolling down
+  );
+  
+  // Keep track of previous scroll position to determine direction
+  const [lastScrollTop, setLastScrollTop] = useState(0);
+  const [scrollDirection, setScrollDirection] = useState('none');
+  
+  // Monitor scroll direction
+  useEffect(() => {
+    const handleScroll = () => {
+      const st = window.scrollY;
+      
+      if (st > lastScrollTop) {
+        // Scrolling down
+        setScrollDirection('down');
+      } else if (st < lastScrollTop) {
+        // Scrolling up
+        setScrollDirection('up');
+      }
+      
+      setLastScrollTop(st);
+    };
+    
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [lastScrollTop]);
+  
+  // Update animation based on scroll direction
+  useEffect(() => {
+    if (scrollDirection === 'down') {
+      // Move name left when scrolling down
+      nameRef.current && controls.start({
+        x: -window.innerWidth, // Move left offscreen
+        transition: { duration: 0.8, ease: "easeOut" }
+      });
+    } else if (scrollDirection === 'up') {
+      // Move name right when scrolling up
+      nameRef.current && controls.start({
+        x: window.innerWidth, // Move right offscreen
+        transition: { duration: 0.8, ease: "easeOut" }
+      });
+    } else {
+      // Initial position
+      nameRef.current && controls.start({
+        x: 0,
+        transition: { duration: 0.8, ease: "easeOut" }
+      });
+    }
+  }, [scrollDirection, controls]);
   
   useEffect(() => {
     setLoaded(true);
-    // Start animations when component mounts
+    
+    // Initialize animation
     controls.start({
       opacity: 1,
       y: 0,
       transition: { duration: 0.8, ease: "easeOut" }
     });
   }, [controls]);
-  
-  // Detect reduced motion preference
-  const prefersReducedMotion = window.matchMedia?.(
-    '(prefers-reduced-motion: reduce)'
-  ).matches;
   
   // Use simpler animations if reduced motion is preferred
   const animations = prefersReducedMotion ? {
@@ -47,10 +100,9 @@ const Hero = () => {
       className="relative w-full h-screen mx-auto flex items-center justify-center overflow-hidden"
       aria-label="Introduction - Mohammed Sadhef, Full Stack Developer"
     >
-      {/* Background gradient effect - static for better performance */}
+      {/* Background gradient effect */}
       <div className="absolute top-0 left-0 w-full h-full bg-gradient-radial from-transparent to-black opacity-80 z-0" />
       
-      {/* Remove animated spotlight for better performance */}
       <div className="absolute w-full max-w-lg h-96 rounded-full blur-[120px] opacity-[0.03] bg-white z-0" />
       
       <div className="container relative z-10 px-6 mx-auto flex flex-col items-center">
@@ -67,10 +119,13 @@ const Hero = () => {
             <div className="h-[1px] w-6 bg-white-100 ml-2 opacity-60" />
           </motion.div>
           
-          {/* Name with proper heading and SEO structure */}
+          {/* Name with scroll animation */}
           <motion.h1 
-            {...animations}
-            className={`${styles.heroHeadText} text-white mb-2 text-center`}
+            ref={nameRef}
+            animate={controls}
+            style={prefersReducedMotion ? {} : { x: nameX }}
+            className={`${styles.heroHeadText} text-white mb-2 text-center transition-transform`}
+            itemProp="name"
           >
             Mohammed <span className="text-white relative inline-block after:content-[''] after:absolute after:bottom-1 after:left-0 after:w-full after:h-[1px] after:bg-white after:opacity-30">Sadhef</span>
           </motion.h1>
@@ -81,7 +136,7 @@ const Hero = () => {
             className="text-secondary text-lg max-w-2xl text-center leading-relaxed font-light mt-3"
             itemProp="description"
           >
-            {`${getExperienceYears()}+ years experienced`} Full Stack Developer specializing in MERN stack 
+            Full Stack Developer specializing in MERN stack 
             (MongoDB, Express.js, React.js, Node.js), Python, JavaScript and AI integration. 
             Building responsive web applications and providing custom solutions
             for modern businesses.
@@ -123,7 +178,7 @@ const Hero = () => {
         </div>
       </div>
       
-      {/* Simplified scroll indicator with better performance */}
+      {/* Scroll indicator */}
       {!prefersReducedMotion && (
         <div className="absolute xs:bottom-10 bottom-16 w-full flex justify-center items-center">
           <a href="#about" className="flex flex-col items-center" aria-label="Scroll to About section">
