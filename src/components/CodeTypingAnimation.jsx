@@ -15,9 +15,6 @@ const CodeTypingAnimation = ({ onComplete }) => {
     'const portfolio = {',
     '  name: "Mohammed Sadhef",',
     '  role: "Full Stack Developer",',
-    '  greeting: () => {',
-    '    return "Hello World!";',
-    '  }',
     '};',
     ''
   ];
