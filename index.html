@@ -5,13 +5,21 @@
     <link rel="icon" type="image/svg+xml" href="/sadhefportfolio.webp" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     
+    <!-- Preconnect to important resources -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    
     <!-- Google Site Verification -->
     <meta name="google-site-verification" content="6dHere04zWwdIbbG8NaRGrqNNJUdgzJqMI_U63Co14g" />
     
-    <!-- SEO Meta Tags -->
+    <!-- Performance optimization -->
+    <link rel="preload" href="/sadhefportfolio.webp" as="image" />
+    <link rel="preload" href="/fonts/poppins-v20-latin-regular.woff2" as="font" type="font/woff2" crossorigin />
+    
+    <!-- Core SEO Meta Tags -->
     <title>Mohammed Sadhef | Full Stack Developer | MERN Stack & Python</title>
-    <meta name="description" content="Mohammed Sadhef - Experienced Full Stack Developer specializing in MERN Stack, Python, JavaScript, and AI integration. View my portfolio and projects." />
-    <meta name="keywords" content="Sadhef, Mohammed Sadhef, Full Stack Developer, MERN Stack, React, Node.js, MongoDB, Express, Python, JavaScript" />
+    <meta name="description" content="Mohammed Sadhef - Experienced Full Stack Developer specializing in MERN Stack (MongoDB, Express, React, Node.js), Python, JavaScript, and AI integration. View my portfolio and projects." />
+    <meta name="keywords" content="Sadhef, Mohammed Sadhef, Full Stack Developer, MERN Stack, React, Node.js, MongoDB, Express, Python, JavaScript, Web Developer" />
     <meta name="author" content="Mohammed Sadhef" />
     
     <!-- Open Graph / Social Media Meta Tags -->
@@ -20,18 +28,127 @@
     <meta property="og:url" content="https://sadhef.info/" />
     <meta property="og:type" content="website" />
     <meta property="og:image" content="https://sadhef.info/sadhefportfolio.webp" />
+    <meta property="og:image:alt" content="Mohammed Sadhef - Full Stack Developer" />
+    <meta property="og:site_name" content="Mohammed Sadhef Portfolio" />
+    <meta property="og:locale" content="en_US" />
     
     <!-- Twitter Card data -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Mohammed Sadhef | Full Stack Developer" />
     <meta name="twitter:description" content="Experienced Full Stack Developer specializing in MERN Stack, Python, JavaScript, and AI integration." />
     <meta name="twitter:image" content="https://sadhef.info/sadhefportfolio.webp" />
+    <meta name="twitter:image:alt" content="Mohammed Sadhef - Full Stack Developer" />
+    
+    <!-- Mobile App Tags -->
+    <meta name="application-name" content="Mohammed Sadhef Portfolio" />
+    <meta name="apple-mobile-web-app-title" content="Mohammed Sadhef Portfolio" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="theme-color" content="#000000" />
     
     <!-- Canonical URL -->
     <link rel="canonical" href="https://sadhef.info/" />
+    
+    <!-- Fonts - self-hosted for performance -->
+    <style>
+      /* Poppins font with only necessary weights */
+      @font-face {
+        font-family: 'Poppins';
+        font-style: normal;
+        font-weight: 300;
+        font-display: swap;
+        src: url('/fonts/poppins-v20-latin-300.woff2') format('woff2');
+      }
+      @font-face {
+        font-family: 'Poppins';
+        font-style: normal;
+        font-weight: 400;
+        font-display: swap;
+        src: url('/fonts/poppins-v20-latin-regular.woff2') format('woff2');
+      }
+      @font-face {
+        font-family: 'Poppins';
+        font-style: normal;
+        font-weight: 500;
+        font-display: swap;
+        src: url('/fonts/poppins-v20-latin-500.woff2') format('woff2');
+      }
+      @font-face {
+        font-family: 'Poppins';
+        font-style: normal;
+        font-weight: 700;
+        font-display: swap;
+        src: url('/fonts/poppins-v20-latin-700.woff2') format('woff2');
+      }
+    </style>
+    
+    <!-- DNS prefetch for external resources -->
+    <link rel="dns-prefetch" href="https://api.web3forms.com" />
+    
+    <!-- Sitemap reference for search engines -->
+    <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
+    
+    <!-- Ensure robots can crawl all content -->
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
   </head>
   <body>
+    <!-- Fallback for JavaScript disabled browsers -->
+    <noscript>
+      <div style="padding: 20px; text-align: center; background: #000; color: #fff;">
+        <h1>Mohammed Sadhef - Full Stack Developer</h1>
+        <p>This portfolio requires JavaScript to be enabled. Please enable JavaScript to view the full experience.</p>
+      </div>
+    </noscript>
+    
     <div id="root"></div>
+    
+    <!-- Defer non-critical JavaScript -->
     <script type="module" src="/src/main.jsx"></script>
+    
+    <!-- Structured data for improved SEO -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "ProfilePage",
+        "mainEntity": {
+          "@type": "Person",
+          "name": "Mohammed Sadhef",
+          "jobTitle": "Full Stack Developer",
+          "url": "https://sadhef.info",
+          "sameAs": [
+            "https://github.com/mohdsadhef",
+            "https://linkedin.com/in/mohdsadhef"
+          ],
+          "knowsAbout": [
+            "MERN Stack",
+            "React.js",
+            "Node.js",
+            "MongoDB",
+            "Python",
+            "JavaScript",
+            "Docker",
+            "Kubernetes"
+          ]
+        }
+      }
+    </script>
+    
+    <!-- Inline critical CSS for fast initial rendering -->
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        background-color: #000;
+        color: #fff;
+        font-family: 'Poppins', sans-serif;
+        overflow-x: hidden;
+      }
+      #root {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+      }
+    </style>
   </body>
 </html>
