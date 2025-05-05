@@ -94,8 +94,6 @@ const StarsCanvas = lazy(() =>
   }))
 );
 
-// Code animation - load dynamically only when needed
-const CodeTypingAnimation = lazy(() => import("./components/CodeTypingAnimation"));
 
 const App = () => {
   const [isLoading, setIsLoading] = useState(true);
