@@ -1,22 +1,27 @@
 import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { motion, useAnimation } from "framer-motion";
 import { styles } from "../styles";
 import { fadeIn } from "../utils/motion";
-import AnimatedName from "./AnimatedName";
-import "../styles/nameAnimation.css";
 
-// Enhanced Hero component with the animated name component
+// Optimized Hero component with better animations and SEO
 const Hero = () => {
   const [loaded, setLoaded] = useState(false);
+  const controls = useAnimation();
+  
+  useEffect(() => {
+    setLoaded(true);
+    // Start animations when component mounts
+    controls.start({
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.8, ease: "easeOut" }
+    });
+  }, [controls]);
   
   // Detect reduced motion preference
   const prefersReducedMotion = window.matchMedia?.(
     '(prefers-reduced-motion: reduce)'
   ).matches;
-  
-  useEffect(() => {
-    setLoaded(true);
-  }, []);
   
   // Use simpler animations if reduced motion is preferred
   const animations = prefersReducedMotion ? {
@@ -35,9 +40,10 @@ const Hero = () => {
       className="relative w-full h-screen mx-auto flex items-center justify-center overflow-hidden"
       aria-label="Introduction - Mohammed Sadhef, Full Stack Developer"
     >
-      {/* Background gradient effect */}
+      {/* Background gradient effect - static for better performance */}
       <div className="absolute top-0 left-0 w-full h-full bg-gradient-radial from-transparent to-black opacity-80 z-0" />
       
+      {/* Remove animated spotlight for better performance */}
       <div className="absolute w-full max-w-lg h-96 rounded-full blur-[120px] opacity-[0.03] bg-white z-0" />
       
       <div className="container relative z-10 px-6 mx-auto flex flex-col items-center">
@@ -54,14 +60,13 @@ const Hero = () => {
             <div className="h-[1px] w-6 bg-white-100 ml-2 opacity-60" />
           </motion.div>
           
-          {/* Animated Name Component */}
-          <div className="my-2">
-            <AnimatedName 
-              firstName="Mohammed" 
-              lastName="Sadhef" 
-              className={styles.heroHeadText}
-            />
-          </div>
+          {/* Name with proper heading and SEO structure */}
+          <motion.h1 
+            {...animations}
+            className={`${styles.heroHeadText} text-white mb-2 text-center`}
+          >
+            Mohammed <span className="text-white relative inline-block after:content-[''] after:absolute after:bottom-1 after:left-0 after:w-full after:h-[1px] after:bg-white after:opacity-30">Sadhef</span>
+          </motion.h1>
           
           {/* SEO-optimized subtitle with keywords and schema */}
           <motion.p 
@@ -111,7 +116,7 @@ const Hero = () => {
         </div>
       </div>
       
-      {/* Scroll indicator */}
+      {/* Simplified scroll indicator with better performance */}
       {!prefersReducedMotion && (
         <div className="absolute xs:bottom-10 bottom-16 w-full flex justify-center items-center">
           <a href="#about" className="flex flex-col items-center" aria-label="Scroll to About section">
