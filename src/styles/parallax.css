@@ -1,0 +1,127 @@
+/* src/styles/parallax.css */
+
+/* Base parallax container */
+.parallax-container {
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+    transform-style: preserve-3d;
+  }
+  
+  /* Layer styling for parallax content */
+  .parallax-layer {
+    @apply absolute inset-0 w-full h-full;
+    will-change: transform;
+    transform-style: preserve-3d;
+  }
+  
+  /* Different speeds for parallax layers */
+  .parallax-speed-1 {
+    --parallax-speed: 0.2;
+  }
+  
+  .parallax-speed-2 {
+    --parallax-speed: 0.4;
+  }
+  
+  .parallax-speed-3 {
+    --parallax-speed: 0.6;
+  }
+  
+  .parallax-speed-4 {
+    --parallax-speed: 0.8;
+  }
+  
+  /* For devices that prefer reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .parallax-layer {
+      transform: none !important;
+      transition: none !important;
+    }
+  }
+  
+  /* Custom optimizations for different screen sizes */
+  @media (max-width: 768px) {
+    .parallax-mobile-disabled {
+      transform: none !important;
+      transition: none !important;
+    }
+  }
+  
+  /* Enhance text visibility in parallax sections */
+  .parallax-text {
+    text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    @apply relative z-10;
+  }
+  
+  /* Enhance opacity changes on scroll */
+  .opacity-scroll {
+    @apply transition-opacity duration-500;
+  }
+  
+  /* Helper for creating parallax depth effects */
+  .parallax-depth {
+    transform: translateZ(var(--parallax-depth, 0)) scale(calc(1 + var(--parallax-depth, 0) * 0.1));
+  }
+  
+  /* Enhance image parallax effects */
+  .img-parallax {
+    @apply absolute top-0 left-0 w-full h-full object-cover;
+    transform: translateY(calc(var(--parallax-offset, 0) * 1px));
+  }
+  
+  /* Offset helpers */
+  .parallax-offset-bottom {
+    transform-origin: bottom;
+  }
+  
+  .parallax-offset-top {
+    transform-origin: top;
+  }
+  
+  .parallax-offset-left {
+    transform-origin: left;
+  }
+  
+  .parallax-offset-right {
+    transform-origin: right;
+  }
+  
+  /* Enhance hero section parallax effects */
+  .hero-parallax {
+    @apply relative overflow-hidden;
+    perspective: 1000px;
+    will-change: transform;
+  }
+  
+  .hero-parallax-content {
+    @apply relative z-10;
+    transform: translateZ(0);
+  }
+  
+  /* Enhance section transitions */
+  .section-transition {
+    @apply relative transition-all duration-700;
+  }
+  
+  .section-transition::after {
+    content: '';
+    @apply absolute bottom-0 left-0 w-full h-px bg-white bg-opacity-10;
+  }
+  
+  /* Custom gradient overlays for parallax sections */
+  .parallax-overlay-dark {
+    @apply absolute inset-0 bg-gradient-to-b from-transparent to-black opacity-50;
+    pointer-events: none;
+  }
+  
+  .parallax-overlay-light {
+    @apply absolute inset-0 bg-gradient-to-b from-black to-transparent opacity-50;
+    pointer-events: none;
+  }
+  
+  /* Enhance visibility of content in parallax sections */
+  .content-on-parallax {
+    @apply relative z-10 bg-black bg-opacity-50 backdrop-blur-sm;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+  }

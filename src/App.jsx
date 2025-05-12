@@ -12,6 +12,12 @@ import { Navbar, Hero } from "./components";
 import "./styles/imageFilters.css";
 import "./styles/heroStyles.css";
 import "./styles/universal-fixes.css"; 
+// Import parallax styles if you've created them
+// import "./styles/parallax.css"; 
+
+// Import simplified parallax components
+import SmoothScroll from "./components/parallax/SmoothScroll";
+import ParallaxBackground from "./components/parallax/ParallaxBackground";
 
 // Lazy load components for better performance
 const About = lazy(() => import("./components/About"));
@@ -72,9 +78,6 @@ const LoadingComponent = () => (
 
 const App = () => {
   const [isLoading, setIsLoading] = useState(true);
-  const [hasInteracted, setHasInteracted] = useState(false);
-  
-  // Mobile detection for performance optimization
   const [isMobile, setIsMobile] = useState(false);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
@@ -82,9 +85,7 @@ const App = () => {
   useEffect(() => {
     // Check if device is mobile
     const checkMobile = () => {
-      const mobile = window.innerWidth < 768 || 
-                    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-      setIsMobile(mobile);
+      setIsMobile(window.innerWidth < 768);
     };
     
     // Check if user prefers reduced motion
@@ -101,35 +102,15 @@ const App = () => {
     // Set up listeners for changes
     window.addEventListener('resize', checkMobile);
     
-    // Listen for media query changes
-    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-    if (mediaQuery.addEventListener) {
-      mediaQuery.addEventListener('change', checkReducedMotion);
-    }
-    
-    // Track user interaction
-    const handleInteraction = () => {
-      setHasInteracted(true);
-    };
-    
-    window.addEventListener('click', handleInteraction);
-    window.addEventListener('scroll', handleInteraction);
-    
     // Mark app as loaded after a short delay
     const timer = setTimeout(() => {
       setIsLoading(false);
-    }, 1500);
+    }, 1000);
     
     // Clean up event listeners
     return () => {
       clearTimeout(timer);
       window.removeEventListener('resize', checkMobile);
-      window.removeEventListener('click', handleInteraction);
-      window.removeEventListener('scroll', handleInteraction);
-      
-      if (mediaQuery.removeEventListener) {
-        mediaQuery.removeEventListener('change', checkReducedMotion);
-      }
     };
   }, []);
 
@@ -147,79 +128,87 @@ const App = () => {
 
   return (
     <BrowserRouter>
-      {/* Add SEO component */}
       <SEO />
       
-      <div className='relative z-0'>
-        {/* Critical rendering path components */}
-        <div className='bg-transparent'>
-          <Navbar />
-          <Hero />
-        </div>
+      <SmoothScroll>
+        {/* Simple background implementation that doesn't rely on useScroll */}
+        <div className="relative">
+          {/* Fixed background */}
+          <div className="fixed inset-0 bg-black -z-10">
+            {/* Static star-like background for better performance */}
+            <div 
+              className="absolute inset-0 opacity-20" 
+              style={{
+                backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.15) 1px, transparent 1px)',
+                backgroundSize: '20px 20px'
+              }}
+            />
+          </div>
+          
+          {/* Main content */}
+          <div className='relative z-0'>
+            {/* Critical rendering path components */}
+            <div className='bg-transparent'>
+              <Navbar />
+              <Hero />
+            </div>
+            
+            {/* About section */}
+            <div id="about" className="section-transition">
+              <ErrorBoundary>
+                <Suspense fallback={<LoadingComponent />}>
+                  <About />
+                </Suspense>
+              </ErrorBoundary>
+            </div>
+            
+            {/* Experience section */}
+            <div id="work" className="section-transition">
+              <ErrorBoundary>
+                <Suspense fallback={<LoadingComponent />}>
+                  <Experience />
+                </Suspense>
+              </ErrorBoundary>
+            </div>
+            
+            {/* Tech section */}
+            <div className="section-transition">
+              <ErrorBoundary>
+                <Suspense fallback={<LoadingComponent />}>
+                  <Tech />
+                </Suspense>
+              </ErrorBoundary>
+            </div>
+            
+            {/* Works section */}
+            <div id="projects" className="section-transition safari-stacking-fix">
+              <ErrorBoundary>
+                <Suspense fallback={<LoadingComponent />}>
+                  <Works />
+                </Suspense>
+              </ErrorBoundary>
+            </div>
+            
+            {/* Contact section */}
+            <div id="contact" className="section-transition">
+              <ErrorBoundary>
+                <Suspense fallback={<LoadingComponent />}>
+                  <div className='relative z-0'>
+                    <Contact />
+                  </div>
+                </Suspense>
+              </ErrorBoundary>
+            </div>
+          </div>
         
-        {/* About section - high priority */}
-        <div id="about" className="section-placeholder">
-          <ErrorBoundary>
-            <Suspense fallback={<LoadingComponent />}>
-              <About />
+          {/* Only load stars when not on mobile and user prefers animations */}
+          {!isMobile && !prefersReducedMotion && (
+            <Suspense fallback={null}>
+              <StarsCanvas />
             </Suspense>
-          </ErrorBoundary>
+          )}
         </div>
-        
-        {/* Experience section */}
-        <div id="work" className="section-placeholder">
-          <ErrorBoundary>
-            <Suspense fallback={<LoadingComponent />}>
-              <Experience />
-            </Suspense>
-          </ErrorBoundary>
-        </div>
-        
-        {/* Tech section */}
-        <div className="section-placeholder">
-          <ErrorBoundary>
-            <Suspense fallback={<LoadingComponent />}>
-              <Tech />
-            </Suspense>
-          </ErrorBoundary>
-        </div>
-        
-        {/* Works section */}
-        <div id="projects" className="section-placeholder safari-stacking-fix">
-          <ErrorBoundary>
-            <Suspense fallback={<LoadingComponent />}>
-              <Works />
-            </Suspense>
-          </ErrorBoundary>
-        </div>
-        
-        {/* Contact section */}
-        <div id="contact" className="section-placeholder">
-          <ErrorBoundary>
-            <Suspense fallback={<LoadingComponent />}>
-              <div className='relative z-0'>
-                <Contact />
-              </div>
-            </Suspense>
-          </ErrorBoundary>
-        </div>
-      </div>
-      
-      {/* Only load stars when not on mobile and user prefers animations */}
-      {!isMobile && !prefersReducedMotion && (
-        <Suspense fallback={null}>
-          <StarsCanvas />
-        </Suspense>
-      )}
-      
-      {/* Static background for mobile or reduced motion preference */}
-      {(isMobile || prefersReducedMotion) && (
-        <div className="fixed inset-0 z-[-1] safari-bg">
-          <div className="absolute inset-0 bg-black"></div>
-          <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#ffffff_1px,transparent_1px)]" 
-               style={{backgroundSize: "20px 20px"}}></div>
-        </div>
-      )}
+      </SmoothScroll>
     </BrowserRouter>
   );
 };

@@ -1,30 +1,41 @@
-import React, { useState, useEffect } from "react";
-import { motion, useAnimation } from "framer-motion";
+import React, { useState, useEffect, useRef } from "react";
+import { motion } from "framer-motion";
 import { styles } from "../styles";
 import { fadeIn } from "../utils/motion";
 
 // Optimized Hero component with better animations and SEO
 const Hero = () => {
   const [loaded, setLoaded] = useState(false);
-  const controls = useAnimation();
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const heroRef = useRef(null);
   
+  // Device capability detection
   useEffect(() => {
     setLoaded(true);
-    // Start animations when component mounts
-    controls.start({
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.8, ease: "easeOut" }
-    });
-  }, [controls]);
-  
-  // Detect reduced motion preference
-  const prefersReducedMotion = window.matchMedia?.(
-    '(prefers-reduced-motion: reduce)'
-  ).matches;
+    
+    // Check if user prefers reduced motion
+    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setPrefersReducedMotion(mediaQuery.matches);
+    
+    // Check if device is mobile
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    // Run initial checks
+    checkMobile();
+    
+    // Set up listeners
+    window.addEventListener("resize", checkMobile);
+    
+    return () => {
+      window.removeEventListener("resize", checkMobile);
+    };
+  }, []);
   
   // Use simpler animations if reduced motion is preferred
-  const animations = prefersReducedMotion ? {
+  const animations = prefersReducedMotion || isMobile ? {
     initial: { opacity: 0 },
     animate: { opacity: 1 },
     transition: { duration: 0.5 }
@@ -36,6 +47,7 @@ const Hero = () => {
 
   return (
     <section 
+      ref={heroRef}
       id="home"
       className="relative w-full h-screen mx-auto flex items-center justify-center overflow-hidden"
       aria-label="Introduction - Mohammed Sadhef, Full Stack Developer"
@@ -43,9 +55,7 @@ const Hero = () => {
       {/* Background gradient effect - static for better performance */}
       <div className="absolute top-0 left-0 w-full h-full bg-gradient-radial from-transparent to-black opacity-80 z-0" />
       
-      {/* Remove animated spotlight for better performance */}
-      <div className="absolute w-full max-w-lg h-96 rounded-full blur-[120px] opacity-[0.03] bg-white z-0" />
-      
+      {/* Container with content */}
       <div className="container relative z-10 px-6 mx-auto flex flex-col items-center">
         <div className="flex flex-col items-center justify-center text-center">
           {/* SEO-optimized header structure */}
@@ -72,7 +82,6 @@ const Hero = () => {
           <motion.p 
             {...animations}
             className="text-secondary text-lg max-w-2xl text-center leading-relaxed font-light mt-3"
-            itemProp="description"
           >
             Full Stack Developer specializing in MERN stack 
             (MongoDB, Express.js, React.js, Node.js), Python, JavaScript and AI integration. 
@@ -105,7 +114,6 @@ const Hero = () => {
           <motion.div 
             {...animations}
             className="flex flex-wrap justify-center gap-x-4 gap-y-2 mt-12 max-w-xl"
-            itemProp="keywords"
           >
             {["React.js", "Node.js", "Express.js", "MongoDB", "PostgreSQL", "Docker", "Python", "Redux", "TailwindCSS"].map((tech, index) => (
               <span key={index} className="text-white text-opacity-50 text-sm">

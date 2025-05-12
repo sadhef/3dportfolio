@@ -1,103 +1,121 @@
-import React, { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import React, { useEffect, useState, useRef } from "react";
+import { motion, useScroll, useTransform } from "framer-motion";
 import { styles } from "../styles";
-import { github } from "../assets";
 import { SectionWrapper } from "../hoc";
 import { projects } from "../constants";
-import { fadeIn, textVariant } from "../utils/motion";
+import { textVariant } from "../utils/motion";
+import ParallaxProjectCard from "./parallax/ParallaxProjectCard";
 
-// Universal card component using Safari fixes for all browsers
-const ProjectCard = ({
-  index,
-  name,
-  description,
-  tags,
-  image,
-  source_code_link,
-}) => {
-  return (
-    <div className="project-card w-full bg-tertiary p-5 rounded-2xl h-full flex flex-col">
-      <div className="relative w-full h-[230px]">
-        <img
-          src={image}
-          alt={name}
-          className="w-full h-full object-cover rounded-2xl"
-        />
-
-        <div className="absolute inset-0 flex justify-end m-3 card-img_hover">
-          <div
-            onClick={() => window.open(source_code_link, "_blank")}
-            className="black-gradient w-10 h-10 rounded-full flex justify-center items-center cursor-pointer"
-          >
-            <img
-              src={github}
-              alt="source code"
-              className="w-1/2 h-1/2 object-contain"
-            />
-          </div>
-        </div>
-      </div>
-
-      <div className="mt-5 flex-grow">
-        <h3 className="text-white font-bold text-[24px]">{name}</h3>
-        <p className="mt-2 text-secondary text-[14px] project-description overflow-hidden">
-          {description}
-        </p>
-      </div>
-
-      <div className="mt-4 flex flex-wrap gap-2">
-        {tags.map((tag) => (
-          <p
-            key={`${name}-${tag.name}`}
-            className="text-[14px] text-white"
-          >
-            #{tag.name}
-          </p>
-        ))}
-      </div>
-    </div>
-  );
-};
-
+// Enhanced Works component with improved performance and parallax effects
 const Works = () => {
   const [isLoaded, setIsLoaded] = useState(false);
-
-  // Force component to update once mounted
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const sectionRef = useRef(null);
+  
+  // For parallax scrolling effect
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start end", "end start"]
+  });
+  
+  // Transform values for parallax elements
+  const headerY = useTransform(scrollYProgress, [0, 1], [50, -50]);
+  const headerOpacity = useTransform(scrollYProgress, [0, 0.2, 0.9, 1], [0, 1, 1, 0]);
+  
+  // Check device capabilities
   useEffect(() => {
-    // Force DOM update to ensure component renders
+    // Check if user prefers reduced motion
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setPrefersReducedMotion(mediaQuery.matches);
+    
+    // Check if device is mobile
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    // Initial checks
+    checkMobile();
+    
+    // Force component to update once mounted
     setTimeout(() => {
       setIsLoaded(true);
     }, 100);
+    
+    // Listen for changes
+    window.addEventListener('resize', checkMobile);
+    const motionListener = (e) => setPrefersReducedMotion(e.matches);
+    mediaQuery.addEventListener('change', motionListener);
+    
+    return () => {
+      window.removeEventListener('resize', checkMobile);
+      mediaQuery.removeEventListener('change', motionListener);
+    };
   }, []);
+  
+  // Should disable parallax effects?
+  const disableParallax = prefersReducedMotion || isMobile;
 
   return (
-    <div className="works-section">
-      {/* Standard header without complex animations */}
-      <div>
-        <p className={styles.sectionSubText}>My work</p>
-        <h2 className={styles.sectionHeadText}>Projects.</h2>
-        <p className="mt-3 text-secondary text-[17px] max-w-3xl leading-[30px]">
-          Following projects showcases my skills and experience through
+    <div className="works-section" ref={sectionRef}>
+      {/* Header with parallax effect */}
+      <motion.div
+        style={{ 
+          y: disableParallax ? 0 : headerY,
+          opacity: disableParallax ? 1 : headerOpacity
+        }}
+        className="mb-12"
+      >
+        {/* Standard header with accessibility improvements */}
+        <h2 className="sr-only">Projects</h2>
+        <p className={`${styles.sectionSubText} text-center`}>My work</p>
+        <h3 className={`${styles.sectionHeadText} text-center`}>Projects.</h3>
+        <motion.p 
+          className="mt-3 text-secondary text-[17px] max-w-3xl leading-[30px] mx-auto text-center"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          Following projects showcase my skills and experience through
           real-world examples of my work. Each project is briefly described with
-          links to code repositories and live demos in it. It reflects my
+          links to code repositories and live demos. It reflects my
           ability to solve complex problems, work with different technologies,
           and manage projects effectively.
-        </p>
-      </div>
+        </motion.p>
+      </motion.div>
 
-      {/* Render projects with exactly three cards per row */}
+      {/* Responsive grid with proper semantic structure and optimized rendering */}
       {isLoaded && (
-        <div className="mt-20 three-column-grid">
+        <div 
+          className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 px-4 sm:px-6 lg:px-8"
+          role="list"
+          aria-label="Project portfolio"
+        >
           {projects.map((project, index) => (
-            <div key={`project-${index}`} className="card-wrapper">
-              <ProjectCard
+            <article key={`project-${index}`} role="listitem" className="h-full">
+              <ParallaxProjectCard
                 index={index}
                 {...project}
               />
-            </div>
+            </article>
           ))}
         </div>
       )}
+      
+      {/* Add a rich structured data for SEO */}
+      <div itemScope itemType="https://schema.org/Collection" className="hidden">
+        <meta itemProp="name" content="Mohammed Sadhef's Portfolio Projects" />
+        <meta itemProp="description" content="Collection of web development projects by Mohammed Sadhef" />
+        {projects.map((project, index) => (
+          <div key={index} itemScope itemType="https://schema.org/CreativeWork" itemProp="hasPart">
+            <meta itemProp="name" content={project.name} />
+            <meta itemProp="description" content={project.description} />
+            <meta itemProp="url" content={project.source_code_link} />
+            <meta itemProp="image" content={project.image} />
+            <meta itemProp="keywords" content={project.tags.map(tag => tag.name).join(',')} />
+          </div>
+        ))}
+      </div>
     </div>
   );
 };
