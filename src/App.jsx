@@ -17,8 +17,6 @@ import "./styles/universal-fixes.css";
 import "./styles/parallax.css";  // Basic parallax styles
 import "./styles/heroScroll.css"; // Hero section scroll effects
 
-// Import simple parallax component
-import SimpleParallax from "./components/parallax/SimpleParallax";
 
 // Lazy load components for better performance
 const About = lazy(() => import("./components/About"));
