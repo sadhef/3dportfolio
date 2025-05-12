@@ -3,17 +3,14 @@ import { motion } from "framer-motion";
 import { styles } from "../styles";
 import { fadeIn } from "../utils/motion";
 
-// Optimized Hero component with better animations and SEO
 const Hero = () => {
-  const [loaded, setLoaded] = useState(false);
+  const [scrollY, setScrollY] = useState(0);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const heroRef = useRef(null);
   
   // Device capability detection
   useEffect(() => {
-    setLoaded(true);
-    
     // Check if user prefers reduced motion
     const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
     setPrefersReducedMotion(mediaQuery.matches);
@@ -26,25 +23,57 @@ const Hero = () => {
     // Run initial checks
     checkMobile();
     
-    // Set up listeners
-    window.addEventListener("resize", checkMobile);
+    // Handle scroll events
+    const handleScroll = () => {
+      setScrollY(window.scrollY);
+    };
     
+    // Set up event listeners
+    window.addEventListener("resize", checkMobile);
+    window.addEventListener("scroll", handleScroll);
+    
+    // Clean up
     return () => {
       window.removeEventListener("resize", checkMobile);
+      window.removeEventListener("scroll", handleScroll);
     };
   }, []);
   
   // Use simpler animations if reduced motion is preferred
-  const animations = prefersReducedMotion || isMobile ? {
-    initial: { opacity: 0 },
-    animate: { opacity: 1 },
-    transition: { duration: 0.5 }
-  } : {
-    initial: "hidden",
-    animate: "show",
-    variants: fadeIn("down", "tween", 0.2, 1)
+  const disableEffects = prefersReducedMotion || isMobile;
+  
+  // Animations based on scroll position
+  const calculateParallaxStyles = () => {
+    if (disableEffects) return {};
+    
+    const opacity = 1 - Math.min(1, scrollY / 700);
+    const translateY = scrollY * 0.4;
+    
+    return {
+      container: {
+        opacity: opacity,
+        transform: `translateY(${translateY}px)`
+      },
+      tagline: {
+        transform: `translateY(${scrollY * 0.1}px)`
+      },
+      title: {
+        transform: `translateY(${scrollY * 0.2}px)`
+      },
+      subtitle: {
+        transform: `translateY(${scrollY * 0.25}px)`
+      },
+      buttons: {
+        transform: `translateY(${scrollY * 0.15}px)`
+      },
+      tags: {
+        transform: `translateY(${scrollY * 0.3}px)`
+      }
+    };
   };
-
+  
+  const parallaxStyles = calculateParallaxStyles();
+  
   return (
     <section 
       ref={heroRef}
@@ -52,16 +81,22 @@ const Hero = () => {
       className="relative w-full h-screen mx-auto flex items-center justify-center overflow-hidden"
       aria-label="Introduction - Mohammed Sadhef, Full Stack Developer"
     >
-      {/* Background gradient effect - static for better performance */}
+      {/* Background gradient effect */}
       <div className="absolute top-0 left-0 w-full h-full bg-gradient-radial from-transparent to-black opacity-80 z-0" />
       
-      {/* Container with content */}
-      <div className="container relative z-10 px-6 mx-auto flex flex-col items-center">
+      {/* Container with parallax effects on scroll */}
+      <div 
+        className="container relative z-10 px-6 mx-auto flex flex-col items-center"
+        style={disableEffects ? {} : parallaxStyles.container}
+      >
         <div className="flex flex-col items-center justify-center text-center">
-          {/* SEO-optimized header structure */}
+          {/* Tagline */}
           <motion.div 
-            {...animations}
             className="flex items-center mb-4"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            style={disableEffects ? {} : parallaxStyles.tagline}
           >
             <div className="h-[1px] w-6 bg-white-100 mr-2 opacity-60" />
             <span className="text-white-100 text-sm tracking-widest uppercase font-light">
@@ -70,18 +105,24 @@ const Hero = () => {
             <div className="h-[1px] w-6 bg-white-100 ml-2 opacity-60" />
           </motion.div>
           
-          {/* Name with proper heading and SEO structure */}
+          {/* Name */}
           <motion.h1 
-            {...animations}
             className={`${styles.heroHeadText} text-white mb-2 text-center`}
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            style={disableEffects ? {} : parallaxStyles.title}
           >
             Mohammed <span className="text-white relative inline-block after:content-[''] after:absolute after:bottom-1 after:left-0 after:w-full after:h-[1px] after:bg-white after:opacity-30">Sadhef</span>
           </motion.h1>
           
-          {/* SEO-optimized subtitle with keywords and schema */}
+          {/* Subtitle */}
           <motion.p 
-            {...animations}
             className="text-secondary text-lg max-w-2xl text-center leading-relaxed font-light mt-3"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            style={disableEffects ? {} : parallaxStyles.subtitle}
           >
             Full Stack Developer specializing in MERN stack 
             (MongoDB, Express.js, React.js, Node.js), Python, JavaScript and AI integration. 
@@ -89,10 +130,13 @@ const Hero = () => {
             for modern businesses.
           </motion.p>
           
-          {/* CTA buttons with proper ARIA labels */}
+          {/* CTA buttons */}
           <motion.div 
-            {...animations}
             className="flex flex-wrap justify-center gap-4 mt-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+            style={disableEffects ? {} : parallaxStyles.buttons}
           >
             <a 
               href="#contact" 
@@ -110,13 +154,16 @@ const Hero = () => {
             </a>
           </motion.div>
           
-          {/* Tech keywords for SEO */}
+          {/* Tech keywords */}
           <motion.div 
-            {...animations}
             className="flex flex-wrap justify-center gap-x-4 gap-y-2 mt-12 max-w-xl"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            style={disableEffects ? {} : parallaxStyles.tags}
           >
             {["React.js", "Node.js", "Express.js", "MongoDB", "PostgreSQL", "Docker", "Python", "Redux", "TailwindCSS"].map((tech, index) => (
-              <span key={index} className="text-white text-opacity-50 text-sm">
+              <span key={index} className="text-white text-opacity-50 text-sm tech-tag">
                 {tech}
               </span>
             ))}
@@ -124,9 +171,12 @@ const Hero = () => {
         </div>
       </div>
       
-      {/* Simplified scroll indicator with better performance */}
+      {/* Scroll indicator with fade out on scroll */}
       {!prefersReducedMotion && (
-        <div className="absolute xs:bottom-10 bottom-16 w-full flex justify-center items-center">
+        <motion.div 
+          className="absolute xs:bottom-10 bottom-16 w-full flex justify-center items-center"
+          style={{ opacity: Math.max(0, 1 - scrollY / 300) }}
+        >
           <a href="#about" className="flex flex-col items-center" aria-label="Scroll to About section">
             <motion.div
               animate={{
@@ -143,7 +193,7 @@ const Hero = () => {
             </motion.div>
             <span className="text-white-100 text-opacity-50 text-xs uppercase tracking-widest">Scroll</span>
           </a>
-        </div>
+        </motion.div>
       )}
     </section>
   );

@@ -1,0 +1,207 @@
+.hero-scroll-container {
+    position: relative;
+    will-change: transform, opacity;
+    transition: transform 0.1s ease-out, opacity 0.1s ease-out;
+  }
+  
+  /* Depth layers for parallax effect */
+  .parallax-layer-1 {
+    transform: translateZ(0);
+    z-index: 1;
+  }
+  
+  .parallax-layer-2 {
+    transform: translateZ(50px);
+    z-index: 2;
+  }
+  
+  .parallax-layer-3 {
+    transform: translateZ(100px);
+    z-index: 3;
+  }
+  
+  /* Special animation for title glow */
+  .title-glow {
+    position: relative;
+  }
+  
+  .title-glow::after {
+    content: '';
+    position: absolute;
+    top: -20px;
+    left: -20px;
+    right: -20px;
+    bottom: -20px;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+    opacity: 0;
+    z-index: -1;
+    transition: opacity 0.5s ease;
+  }
+  
+  .title-glow:hover::after {
+    opacity: 1;
+  }
+  
+  /* Enhanced button animations */
+  .scroll-btn-primary {
+    display: inline-block;
+    padding: 0.75rem 1.75rem;
+    background-color: #ffffff;
+    color: #000000;
+    font-weight: 500;
+    font-size: 0.95rem;
+    letter-spacing: 0.05em;
+    border-radius: 4px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    border: none;
+    outline: none;
+    cursor: pointer;
+  }
+  
+  .scroll-btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s ease;
+  }
+  
+  .scroll-btn-primary:hover::before {
+    left: 100%;
+  }
+  
+  .scroll-btn-secondary {
+    display: inline-block;
+    padding: 0.75rem 1.75rem;
+    background-color: transparent;
+    color: #ffffff;
+    font-weight: 500;
+    font-size: 0.95rem;
+    letter-spacing: 0.05em;
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    outline: none;
+    cursor: pointer;
+  }
+  
+  .scroll-btn-secondary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.05);
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+  }
+  
+  .scroll-btn-secondary:hover::before {
+    transform: translateX(0);
+  }
+  
+  /* Enhanced tech tag animations */
+  .scroll-tech-tag {
+    padding: 0.25rem 0.75rem;
+    background-color: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    color: rgba(255, 255, 255, 0.6);
+    transition: all 0.3s ease;
+    transform: translateY(0);
+  }
+  
+  .scroll-tech-tag:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.9);
+    transform: translateY(-3px);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+  }
+  
+  /* Scroll indicator animation */
+  .scroll-indicator {
+    position: relative;
+    animation: fadeInUp 1s ease forwards;
+  }
+  
+  @keyframes fadeInUp {
+    from { 
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to { 
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .scroll-indicator-dot {
+    position: relative;
+  }
+  
+  .scroll-indicator-dot::after {
+    content: '';
+    position: absolute;
+    top: -5px;
+    left: -5px;
+    right: -5px;
+    bottom: -5px;
+    background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  
+  .scroll-indicator:hover .scroll-indicator-dot::after {
+    opacity: 1;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 767px) {
+    .hero-scroll-container {
+      transform: none !important;
+      opacity: 1 !important;
+    }
+    
+    .parallax-layer-1,
+    .parallax-layer-2,
+    .parallax-layer-3 {
+      transform: none !important;
+    }
+    
+    .scroll-btn-primary::before,
+    .scroll-btn-secondary::before {
+      display: none;
+    }
+  }
+  
+  /* Disable animations for reduced motion preference */
+  @media (prefers-reduced-motion: reduce) {
+    .hero-scroll-container,
+    .parallax-layer-1,
+    .parallax-layer-2,
+    .parallax-layer-3,
+    .scroll-btn-primary,
+    .scroll-btn-secondary,
+    .scroll-tech-tag,
+    .scroll-indicator {
+      transition: none !important;
+      animation: none !important;
+      transform: none !important;
+    }
+    
+    .scroll-btn-primary::before,
+    .scroll-btn-secondary::before,
+    .scroll-indicator-dot::after {
+      display: none;
+    }
+  }
