@@ -4,7 +4,6 @@ import { styles } from "../styles";
 import { SectionWrapper } from "../hoc";
 import { projects } from "../constants";
 import { textVariant } from "../utils/motion";
-import ParallaxProjectCard from "./parallax/ParallaxProjectCard";
 
 // Enhanced Works component with improved performance and parallax effects
 const Works = () => {
