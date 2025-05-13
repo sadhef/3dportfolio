@@ -1,6 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Set the output directory to a static export
   output: 'export',
+  // Specify the output directory that Vercel expects
+  distDir: 'dist',
   images: {
     domains: ['randomuser.me'],
     unoptimized: true,
