@@ -4,18 +4,18 @@ import { Suspense, lazy, useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 
 // Import only critical components directly
-import { Navbar } from "@/components";
+import { Navbar } from "../components"; // Changed from @/components
 
 // Lazy load components for better performance
-const Hero = lazy(() => import("@/components/Hero"));
-const About = lazy(() => import("@/components/About"));
-const Experience = lazy(() => import("@/components/Experience"));
-const Tech = lazy(() => import("@/components/Tech"));
-const Works = lazy(() => import("@/components/Works"));
-const Contact = lazy(() => import("@/components/Contact"));
+const Hero = lazy(() => import("../components/Hero")); // Changed from @/components/Hero
+const About = lazy(() => import("../components/About")); // Changed from @/components/About
+const Experience = lazy(() => import("../components/Experience"));
+const Tech = lazy(() => import("../components/Tech"));
+const Works = lazy(() => import("../components/Works"));
+const Contact = lazy(() => import("../components/Contact"));
 
 // Dynamic import with SSR disabled for 3D components (crucial for Next.js)
-const StarsCanvas = dynamic(() => import("@/components/canvas/Stars"), { 
+const StarsCanvas = dynamic(() => import("../components/canvas/Stars"), { 
   ssr: false,
   loading: () => null
 });

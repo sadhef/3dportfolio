@@ -1,4 +1,3 @@
-import logo from "./logo.svg";
 import backend from "./backend.png";
 import creator from "./creator.png";
 import mobile from "./mobile.png";
@@ -36,7 +35,6 @@ import blade from "./blade.png";
 import cook from "./cook.png";
 
 export {
-  logo,
   backend,
   creator,
   mobile,

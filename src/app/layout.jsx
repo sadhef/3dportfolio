@@ -1,19 +1,13 @@
-import { Inter, Poppins } from "next/font/google";
+// src/app/layout.jsx
+import { Inter } from "next/font/google";
 import "./globals.css";
 import { defaultMetadata } from "../config/metadata";
 
-// Define fonts
+// Define fonts - Use only Inter for now
 const inter = Inter({
   subsets: ["latin"],
   display: "swap",
   variable: "--font-inter",
-});
-
-const poppins = Poppins({
-  subsets: ["latin"],
-  weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
-  display: "swap",
-  variable: "--font-poppins",
 });
 
 // Export metadata for SEO
@@ -21,13 +15,12 @@ export const metadata = defaultMetadata;
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={`${inter.variable} ${poppins.variable}`}>
+    <html lang="en" className={inter.variable}>
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" crossOrigin="anonymous" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="icon" type="image/webp" href="/sadhefportfolio.webp" />
         <link rel="preload" href="/sadhefportfolio.webp" as="image" type="image/webp" />
         <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
         
         {/* Structured data for Person */}
         <script
