@@ -1,4 +1,4 @@
-import React, { Suspense, useRef } from "react";
+import React, { Suspense, useRef, useEffect } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, Preload, useGLTF } from "@react-three/drei";
 import * as THREE from "three";
@@ -75,5 +75,16 @@ const EarthCanvas = () => {
     </Canvas>
   );
 };
+
+// Static fallback component in case 3D fails
+export const StaticEarthImage = () => (
+  <div className="w-full h-full flex items-center justify-center">
+    <img 
+      src="./desktop_pc/static-computer.png" 
+      alt="Earth" 
+      className="max-w-full max-h-full object-contain filter grayscale"
+    />
+  </div>
+);
 
 export default EarthCanvas;
