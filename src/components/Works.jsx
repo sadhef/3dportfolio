@@ -5,7 +5,6 @@ import { styles } from "../styles";
 import { github } from "../assets";
 import { SectionWrapper } from "../hoc";
 import { projects } from "../constants";
-import OptimizedImage from "./common/OptimizedImage";
 
 const ProjectCard = ({ index, name, description, tags, image, source_code_link }) => {
   const [isVisible, setIsVisible] = useState(false);
