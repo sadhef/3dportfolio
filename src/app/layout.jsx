@@ -1,9 +1,8 @@
-// src/app/layout.jsx
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { defaultMetadata } from "../config/metadata";
+import { Metadata } from "next";
 
-// Define fonts - Use only Inter for now
+// Define fonts
 const inter = Inter({
   subsets: ["latin"],
   display: "swap",
@@ -11,53 +10,107 @@ const inter = Inter({
 });
 
 // Export metadata for SEO
-export const metadata = defaultMetadata;
+export const metadata = {
+  title: {
+    default: "Mohammed Sadhef | Full Stack Developer | MERN Stack & Python",
+    template: "%s | Mohammed Sadhef",
+  },
+  description: "Full Stack Developer specializing in MERN Stack (MongoDB, Express.js, React.js, Node.js), Python, JavaScript, and AI integration. Building responsive web applications and enterprise solutions.",
+  keywords: ["Full Stack Developer", "MERN Stack", "React.js", "Node.js", "MongoDB", "Express.js", "Python", "JavaScript", "AI Integration"],
+  creator: "Mohammed Sadhef",
+  publisher: "Mohammed Sadhef",
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "https://sadhef.info",
+    title: "Mohammed Sadhef | Full Stack Developer",
+    description: "Full Stack Developer specializing in MERN Stack and Python",
+    siteName: "Mohammed Sadhef Portfolio",
+    images: [
+      {
+        url: "https://sadhef.info/sadhefportfolio.webp",
+        width: 1200,
+        height: 630,
+        alt: "Mohammed Sadhef - Full Stack Developer"
+      }
+    ]
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Mohammed Sadhef | Full Stack Developer",
+    description: "Full Stack Developer specializing in MERN Stack and Python",
+    creator: "@mohdsadhef",
+    images: ["https://sadhef.info/sadhefportfolio.webp"]
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+      'max-video-preview': -1,
+    }
+  },
+  alternates: {
+    canonical: "https://sadhef.info",
+  },
+  metadataBase: new URL("https://sadhef.info"),
+  authors: [{ name: "Mohammed Sadhef", url: "https://sadhef.info" }],
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon-16x16.png",
+    apple: "/apple-touch-icon.png",
+  },
+  viewport: "width=device-width, initial-scale=1, maximum-scale=5",
+  themeColor: "#000000",
+  colorScheme: "dark",
+  category: "Portfolio",
+};
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en" className={inter.variable}>
       <head>
-        <link rel="icon" type="image/webp" href="/sadhefportfolio.webp" />
-        <link rel="preload" href="/sadhefportfolio.webp" as="image" type="image/webp" />
         <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
-        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
         
         {/* Structured data for Person */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "Person",
-              "name": "Mohammed Sadhef",
-              "url": "https://sadhef.info",
-              "jobTitle": "Full Stack Developer",
-              "worksFor": {
-                "@type": "Organization",
-                "name": "Biztras"
+              '@context': 'https://schema.org',
+              '@type': 'Person',
+              'name': 'Mohammed Sadhef',
+              'url': 'https://sadhef.info',
+              'jobTitle': 'Full Stack Developer',
+              'worksFor': {
+                '@type': 'Organization',
+                'name': 'Biztras'
               },
-              "knowsAbout": [
-                "MERN Stack Development",
-                "React.js",
-                "Node.js",
-                "MongoDB",
-                "Express.js",
-                "JavaScript",
-                "Python",
-                "Docker",
-                "Kubernetes",
-                "AI Integration",
-                "Full Stack Development",
-                "Web Development"
+              'knowsAbout': [
+                'MERN Stack Development',
+                'React.js',
+                'Node.js',
+                'MongoDB',
+                'Express.js',
+                'JavaScript',
+                'Python',
+                'Docker',
+                'Kubernetes',
+                'AI Integration',
+                'Full Stack Development',
+                'Web Development'
               ],
-              "sameAs": [
-                "https://github.com/mohdsadhef",
-                "https://linkedin.com/in/mohdsadhef",
-                "https://twitter.com/mohdsadhef"
+              'sameAs': [
+                'https://github.com/mohdsadhef',
+                'https://linkedin.com/in/mohdsadhef',
+                'https://twitter.com/mohdsadhef'
               ],
-              "alumniOf": {
-                "@type": "EducationalOrganization",
-                "name": "KTU"
+              'alumniOf': {
+                '@type': 'EducationalOrganization',
+                'name': 'KTU'
               }
             })
           }}
@@ -68,26 +121,22 @@ export default function RootLayout({ children }) {
           type="application/ld+json"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "WebSite",
-              "url": "https://sadhef.info",
-              "name": "Mohammed Sadhef - Full Stack Developer Portfolio",
-              "description": "Portfolio of Mohammed Sadhef, a Full Stack Developer specializing in MERN Stack, Python, JavaScript, and AI integration.",
-              "potentialAction": {
-                "@type": "SearchAction",
-                "target": {
-                  "@type": "EntryPoint",
-                  "urlTemplate": "https://sadhef.info/search?q={search_term_string}"
+              '@context': 'https://schema.org',
+              '@type': 'WebSite',
+              'url': 'https://sadhef.info',
+              'name': 'Mohammed Sadhef - Full Stack Developer Portfolio',
+              'description': "Full Stack Developer specializing in MERN Stack (MongoDB, Express.js, React.js, Node.js), Python, JavaScript, and AI integration.",
+              'potentialAction': {
+                '@type': 'SearchAction',
+                'target': {
+                  '@type': 'EntryPoint',
+                  'urlTemplate': 'https://sadhef.info/search?q={search_term_string}'
                 },
-                "query-input": "required name=search_term_string"
+                'query-input': 'required name=search_term_string'
               },
-              "author": {
-                "@type": "Person",
-                "name": "Mohammed Sadhef"
-              },
-              "audience": {
-                "@type": "Audience",
-                "audienceType": "Employers, Clients, Recruiters"
+              'author': {
+                '@type': 'Person',
+                'name': 'Mohammed Sadhef'
               }
             })
           }}
