@@ -1,3 +1,4 @@
+// src/components/canvas/Computers.jsx
 import React, { Suspense, useEffect, useState, useRef } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, Preload, useGLTF } from "@react-three/drei";
@@ -6,21 +7,30 @@ import * as THREE from "three";
 import CanvasLoader from "../Loader";
 
 const Computers = ({ isMobile }) => {
+  const [mounted, setMounted] = useState(false);
   const computer = useGLTF("./desktop_pc/scene.gltf");
   const computerRef = useRef();
 
-  // Apply black and white shader to all meshes in the model
-  computer.scene.traverse((child) => {
-    if (child.isMesh) {
-      // Create a monochrome material for all meshes
-      const grayScale = 0.8; // Value between 0 (black) and 1 (white)
-      child.material = new THREE.MeshStandardMaterial({
-        color: new THREE.Color(grayScale, grayScale, grayScale),
-        metalness: 0.3,
-        roughness: 0.7,
+  useEffect(() => {
+    setMounted(true);
+    
+    // Apply black and white shader to all meshes in the model
+    if (computer && computer.scene) {
+      computer.scene.traverse((child) => {
+        if (child.isMesh) {
+          // Create a monochrome material for all meshes
+          const grayScale = 0.8; // Value between 0 (black) and 1 (white)
+          child.material = new THREE.MeshStandardMaterial({
+            color: new THREE.Color(grayScale, grayScale, grayScale),
+            metalness: 0.3,
+            roughness: 0.7,
+          });
+        }
       });
     }
-  });
+  }, [computer]);
+
+  if (!mounted) return null;
 
   return (
     <mesh ref={computerRef}>
@@ -45,9 +55,12 @@ const Computers = ({ isMobile }) => {
 };
 
 const ComputersCanvas = () => {
+  const [mounted, setMounted] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
+    
     // Add a listener for changes to the screen size
     const mediaQuery = window.matchMedia("(max-width: 500px)");
 
@@ -67,6 +80,14 @@ const ComputersCanvas = () => {
       mediaQuery.removeEventListener("change", handleMediaQueryChange);
     };
   }, []);
+
+  if (!mounted) {
+    return (
+      <div className="w-full h-[60vh] flex items-center justify-center">
+        <div className="w-10 h-10 border-2 border-white border-opacity-20 border-t-white rounded-full animate-spin"></div>
+      </div>
+    );
+  }
 
   return (
     <Canvas

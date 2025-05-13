@@ -12,7 +12,18 @@ const Experience = lazy(() => import("./components/Experience"));
 const Works = lazy(() => import("./components/Works"));
 const Tech = lazy(() => import("./components/Tech"));
 const Contact = lazy(() => import("./components/Contact"));
-const StarsCanvas = lazy(() => import("./components/canvas/Stars").then(module => ({ default: module.default })));
+
+// Create a separate loader for the StarsCanvas to avoid Three.js initialization issues
+const StarsCanvasLoader = lazy(() => 
+  new Promise(resolve => {
+    // Give the app time to fully initialize before loading Three.js
+    setTimeout(() => {
+      import("./components/canvas/Stars").then(module => {
+        resolve({ default: module.default });
+      });
+    }, 1000);
+  })
+);
 
 // Simple load indicator
 const Loader = () => (
@@ -23,13 +34,22 @@ const Loader = () => (
 
 const App = () => {
   const [domLoaded, setDomLoaded] = useState(false);
-  const { performanceTier, prefersReducedMotion } = window.deviceCapabilities || { performanceTier: 2, prefersReducedMotion: false };
+  const [canRender3D, setCanRender3D] = useState(false);
   
-  // Only enable 3D effects for higher performance devices
-  const shouldRender3D = performanceTier >= 2 && !prefersReducedMotion;
-
   useEffect(() => {
+    // Check if DOM is loaded
     setDomLoaded(true);
+    
+    // Delay Three.js components initialization
+    const timer = setTimeout(() => {
+      const { performanceTier, prefersReducedMotion } = 
+        window.deviceCapabilities || { performanceTier: 2, prefersReducedMotion: false };
+      
+      // Only enable 3D effects for higher performance devices
+      setCanRender3D(performanceTier >= 2 && !prefersReducedMotion);
+    }, 800);
+    
+    return () => clearTimeout(timer);
   }, []);
 
   if (!domLoaded) return <Loader />;
@@ -73,9 +93,9 @@ const App = () => {
         </Suspense>
       </div>
       
-      {shouldRender3D && (
+      {canRender3D && (
         <Suspense fallback={null}>
-          <StarsCanvas />
+          <StarsCanvasLoader />
         </Suspense>
       )}
     </BrowserRouter>

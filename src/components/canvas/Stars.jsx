@@ -19,9 +19,9 @@ const Stars = ({ count = 1000 }) => {
   }, [count, performanceTier]);
   
   // Generate stars only once
-  const sphere = useMemo(() => {
+  const [sphere] = useState(() => {
     return random.inSphere(new Float32Array(starCount * 3), { radius: 1.2 });
-  }, [starCount]);
+  });
   
   // Optimized frame handling
   const frameCount = useRef(0);
@@ -61,15 +61,21 @@ const StaticStarsBg = () => (
 );
 
 const StarsCanvas = () => {
+  const [mounted, setMounted] = useState(false);
   const [shouldRender3D, setShouldRender3D] = useState(false);
-  const { performanceTier, prefersReducedMotion } = window.deviceCapabilities || { performanceTier: 2, prefersReducedMotion: false };
   
   useEffect(() => {
+    // Ensure component is mounted before attempting 3D rendering
+    setMounted(true);
+    
+    const { performanceTier, prefersReducedMotion } = 
+      window.deviceCapabilities || { performanceTier: 2, prefersReducedMotion: false };
+    
     // Only render 3D stars on capable devices
     setShouldRender3D(performanceTier >= 2 && !prefersReducedMotion);
-  }, [performanceTier, prefersReducedMotion]);
+  }, []);
   
-  if (!shouldRender3D) {
+  if (!mounted || !shouldRender3D) {
     return <StaticStarsBg />;
   }
 

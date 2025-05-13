@@ -1,53 +1,27 @@
-// src/components/Works.jsx
-import { useState, useEffect, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { styles } from "../styles";
 import { github } from "../assets";
 import { SectionWrapper } from "../hoc";
 import { projects } from "../constants";
+import { fadeIn, textVariant } from "../utils/motion";
 
-const ProjectCard = ({ index, name, description, tags, image, source_code_link }) => {
-  const [isVisible, setIsVisible] = useState(false);
-  const cardRef = useRef(null);
-  
-  // Use Intersection Observer for better performance
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true);
-          observer.unobserve(entry.target);
-        }
-      },
-      { threshold: 0.1 }
-    );
-    
-    if (cardRef.current) {
-      observer.observe(cardRef.current);
-    }
-    
-    return () => {
-      if (cardRef.current) {
-        observer.unobserve(cardRef.current);
-      }
-    };
-  }, []);
-
+// Universal card component using Safari fixes for all browsers
+const ProjectCard = ({
+  index,
+  name,
+  description,
+  tags,
+  image,
+  source_code_link,
+}) => {
   return (
-    <motion.div
-      ref={cardRef}
-      initial={{ opacity: 0, y: 50 }}
-      animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
-      transition={{ duration: 0.5, delay: index * 0.1 }}
-      className="bg-tertiary p-5 rounded-2xl h-full flex flex-col"
-    >
+    <div className="project-card w-full bg-tertiary p-5 rounded-2xl h-full flex flex-col">
       <div className="relative w-full h-[230px]">
-        <OptimizedImage
+        <img
           src={image}
           alt={name}
           className="w-full h-full object-cover rounded-2xl"
-          width="100%"
-          height="230px"
         />
 
         <div className="absolute inset-0 flex justify-end m-3 card-img_hover">
@@ -66,7 +40,7 @@ const ProjectCard = ({ index, name, description, tags, image, source_code_link }
 
       <div className="mt-5 flex-grow">
         <h3 className="text-white font-bold text-[24px]">{name}</h3>
-        <p className="mt-2 text-secondary text-[14px]">
+        <p className="mt-2 text-secondary text-[14px] project-description overflow-hidden">
           {description}
         </p>
       </div>
@@ -75,47 +49,75 @@ const ProjectCard = ({ index, name, description, tags, image, source_code_link }
         {tags.map((tag) => (
           <p
             key={`${name}-${tag.name}`}
-            className={`text-[14px] ${tag.color}`}
+            className="text-[14px] text-white"
           >
             #{tag.name}
           </p>
         ))}
       </div>
-    </motion.div>
+    </div>
   );
 };
 
 const Works = () => {
-  return (
-    <>
-      <motion.div>
-        <p className={`${styles.sectionSubText} text-center`}>
-          My work
-        </p>
-        <h2 className={`${styles.sectionHeadText} text-center`}>
-          Projects.
-        </h2>
-      </motion.div>
+  const [isLoaded, setIsLoaded] = useState(false);
 
-      <div className="w-full flex">
-        <motion.p
-          className="mt-3 text-secondary text-[17px] max-w-3xl leading-[30px] mx-auto text-center"
-        >
+  // Force component to update once mounted
+  useEffect(() => {
+    // Force DOM update to ensure component renders
+    setTimeout(() => {
+      setIsLoaded(true);
+    }, 100);
+  }, []);
+
+  return (
+    <div className="works-section">
+      {/* Standard header without complex animations */}
+      <div>
+        <p className={styles.sectionSubText}>My work</p>
+        <h2 className={styles.sectionHeadText}>Projects.</h2>
+        <p className="mt-3 text-secondary text-[17px] max-w-3xl leading-[30px]">
           Following projects showcases my skills and experience through
           real-world examples of my work. Each project is briefly described with
           links to code repositories and live demos in it. It reflects my
           ability to solve complex problems, work with different technologies,
           and manage projects effectively.
-        </motion.p>
+        </p>
       </div>
 
-      <div className="mt-20 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-        {projects.map((project, index) => (
-          <ProjectCard key={`project-${index}`} index={index} {...project} />
-        ))}
-      </div>
-    </>
+      {/* Render projects with exactly three cards per row */}
+      {isLoaded && (
+        <div className="mt-20 three-column-grid">
+          {projects.map((project, index) => (
+            <div key={`project-${index}`} className="card-wrapper">
+              <ProjectCard
+                index={index}
+                {...project}
+              />
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   );
 };
 
-export default SectionWrapper(Works, "projects");
+// Create a universal wrapper that matches other section sizes
+const ConsistentSectionWrapper = (Component, idName) => {
+  return function HOC() {
+    return (
+      <section 
+        className="consistent-section relative w-full mx-auto z-10" 
+        id={idName}
+      >
+        {/* Match the padding and margin with other sections */}
+        <div className={`${styles.padding} max-w-7xl mx-auto relative`}>
+          <span className="hash-span" id={idName}>&nbsp;</span>
+          <Component />
+        </div>
+      </section>
+    );
+  };
+};
+
+export default ConsistentSectionWrapper(Works, "projects");

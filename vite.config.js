@@ -10,8 +10,11 @@ export default defineConfig({
       output: {
         manualChunks(id) {
           if (id.includes('node_modules')) {
-            if (id.includes('three') || id.includes('drei') || id.includes('fiber')) {
+            if (id.includes('three')) {
               return 'three-vendor';
+            }
+            if (id.includes('@react-three/drei') || id.includes('@react-three/fiber')) {
+              return 'react-three-vendor';
             }
             if (id.includes('framer-motion')) {
               return 'framer-vendor';
@@ -23,6 +26,12 @@ export default defineConfig({
     }
   },
   optimizeDeps: {
-    include: ['react', 'react-dom', 'react-router-dom', 'three']
+    include: ['react', 'react-dom', 'react-router-dom', 'three'],
+    esbuildOptions: {
+      target: 'es2020'
+    }
+  },
+  resolve: {
+    mainFields: ['browser', 'module', 'main'],
   }
 })

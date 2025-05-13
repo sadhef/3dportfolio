@@ -1,7 +1,14 @@
+// src/main.jsx
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
 import "./index.css";
+
+// Add this critical fix for Three.js
+// Prevents the "Cannot read properties of undefined (reading 'useLayoutEffect')" error
+if (typeof window !== 'undefined') {
+  window.global = window;
+}
 
 // Immediately detect device capabilities and set performance tier
 const detectDeviceCapabilities = () => {
@@ -94,7 +101,7 @@ const startApp = () => {
   setTimeout(removeLoading, 300);
 };
 
-// Load app asynchronously
+// Only initialize after DOM is fully loaded
 if (document.readyState === 'complete') {
   startApp();
 } else {

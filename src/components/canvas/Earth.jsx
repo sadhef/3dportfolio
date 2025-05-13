@@ -1,4 +1,5 @@
-import React, { Suspense, useRef, useEffect } from "react";
+// src/components/canvas/Earth.jsx
+import React, { Suspense, useRef, useEffect, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, Preload, useGLTF } from "@react-three/drei";
 import * as THREE from "three";
@@ -6,22 +7,29 @@ import * as THREE from "three";
 import CanvasLoader from "../Loader";
 
 const Earth = () => {
+  const [mounted, setMounted] = useState(false);
   const earth = useGLTF("./planet/scene.gltf");
   const earthRef = useRef();
 
-  // Apply black and white shader material to all meshes in the model
-  earth.scene.traverse((child) => {
-    if (child.isMesh) {
-      // Create a black and white shader material
-      const material = new THREE.MeshStandardMaterial({
-        color: 0xffffff,
-        metalness: 0.5,
-        roughness: 0.5,
+  useEffect(() => {
+    setMounted(true);
+    
+    // Apply black and white shader material to all meshes in the model
+    if (earth && earth.scene) {
+      earth.scene.traverse((child) => {
+        if (child.isMesh) {
+          // Create a black and white shader material
+          const material = new THREE.MeshStandardMaterial({
+            color: 0xffffff,
+            metalness: 0.5,
+            roughness: 0.5,
+          });
+          
+          child.material = material;
+        }
       });
-      
-      child.material = material;
     }
-  });
+  }, [earth]);
 
   // Slow rotation
   useFrame(() => {
@@ -29,6 +37,8 @@ const Earth = () => {
       earthRef.current.rotation.y += 0.001;
     }
   });
+
+  if (!mounted) return null;
 
   return (
     <mesh ref={earthRef}>
@@ -48,6 +58,16 @@ const Earth = () => {
 };
 
 const EarthCanvas = () => {
+  const [mounted, setMounted] = useState(false);
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+  
+  if (!mounted) {
+    return <StaticEarthImage />;
+  }
+
   return (
     <Canvas
       shadows
