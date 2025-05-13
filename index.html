@@ -9,8 +9,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     
-    <!-- Preload critical assets -->
-    <link rel="preload" href="/sadhefportfolio.webp" as="image" type="image/webp" />
+    <!-- Fix preload by adding correct 'as' attribute and ensuring it's used quickly -->
+    <link rel="preload" href="/sadhefportfolio.webp" as="image" type="image/webp" fetchpriority="high" />
     
     <!-- Google Site Verification -->
     <meta name="google-site-verification" content="6dHere04zWwdIbbG8NaRGrqNNJUdgzJqMI_U63Co14g" />
@@ -51,6 +51,17 @@
       #root {
         min-height: 100vh;
       }
+      /* Add immediate use of preloaded image to avoid warning */
+      body::before {
+        content: "";
+        position: fixed;
+        top: -1000px;
+        left: -1000px;
+        width: 1px;
+        height: 1px;
+        background: url('/sadhefportfolio.webp');
+        opacity: 0.01;
+      }
     </style>
     
     <!-- Sitemap reference -->
@@ -63,6 +74,9 @@
         <p>This portfolio requires JavaScript to be enabled. Please enable JavaScript to view the full experience.</p>
       </div>
     </noscript>
+    
+    <!-- Add this to immediately use the preloaded image -->
+    <img src="/sadhefportfolio.webp" alt="Mohammed Sadhef" width="1" height="1" style="position:absolute;opacity:0.01;pointer-events:none" />
     
     <div id="root"></div>
     

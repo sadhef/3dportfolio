@@ -13,16 +13,34 @@ const Works = lazy(() => import("./components/Works"));
 const Tech = lazy(() => import("./components/Tech"));
 const Contact = lazy(() => import("./components/Contact"));
 
-// Create a separate loader for the StarsCanvas to avoid Three.js initialization issues
-const StarsCanvasLoader = lazy(() => 
-  new Promise(resolve => {
-    // Give the app time to fully initialize before loading Three.js
-    setTimeout(() => {
-      import("./components/canvas/Stars").then(module => {
-        resolve({ default: module.default });
-      });
-    }, 1000);
-  })
+// Create fallback components for 3D content
+const StaticStarsBg = () => (
+  <div className="fixed inset-0 z-[-1] bg-black">
+    <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#ffffff_1px,transparent_1px)]" 
+         style={{backgroundSize: "20px 20px"}}></div>
+  </div>
+);
+
+// Load Three.js components with a safety mechanism
+const safeLoad = (importFn) => {
+  return new Promise((resolve) => {
+    // Wait until the page is fully loaded
+    if (document.readyState === 'complete') {
+      importFn().then(resolve);
+    } else {
+      window.addEventListener('load', () => {
+        // Add a small delay to ensure React is fully initialized
+        setTimeout(() => {
+          importFn().then(resolve);
+        }, 500);
+      }, { once: true });
+    }
+  });
+};
+
+// Safely load StarsCanvas
+const StarsCanvas = lazy(() => 
+  safeLoad(() => import("./components/canvas/Stars"))
 );
 
 // Simple load indicator
@@ -47,7 +65,7 @@ const App = () => {
       
       // Only enable 3D effects for higher performance devices
       setCanRender3D(performanceTier >= 2 && !prefersReducedMotion);
-    }, 800);
+    }, 1000);
     
     return () => clearTimeout(timer);
   }, []);
@@ -58,6 +76,9 @@ const App = () => {
     <BrowserRouter>
       <SEO />
       <Navbar />
+      
+      {/* Render the static stars fallback immediately for all devices */}
+      <StaticStarsBg />
       
       <div className="relative z-0">
         <Suspense fallback={<Loader />}>
@@ -93,9 +114,10 @@ const App = () => {
         </Suspense>
       </div>
       
+      {/* Only load the 3D stars if the device can handle it */}
       {canRender3D && (
         <Suspense fallback={null}>
-          <StarsCanvasLoader />
+          <StarsCanvas />
         </Suspense>
       )}
     </BrowserRouter>

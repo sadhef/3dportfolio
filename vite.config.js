@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import { resolve } from 'path'
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -7,20 +8,15 @@ export default defineConfig({
   build: {
     chunkSizeWarningLimit: 1500,
     rollupOptions: {
+      input: {
+        main: resolve(__dirname, 'index.html'),
+      },
       output: {
-        manualChunks(id) {
-          if (id.includes('node_modules')) {
-            if (id.includes('three')) {
-              return 'three-vendor';
-            }
-            if (id.includes('@react-three/drei') || id.includes('@react-three/fiber')) {
-              return 'react-three-vendor';
-            }
-            if (id.includes('framer-motion')) {
-              return 'framer-vendor';
-            }
-            return 'vendor';
-          }
+        manualChunks: {
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          'three-vendor': ['three', '@react-three/fiber', '@react-three/drei'],
+          'framer-vendor': ['framer-motion'],
+          'ui-vendor': ['react-vertical-timeline-component', 'react-helmet']
         }
       }
     }
