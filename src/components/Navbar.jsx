@@ -1,9 +1,13 @@
+"use client";
+
 import React, { useEffect, useState, useCallback, memo } from "react";
-import { Link } from "react-router-dom";
+import Image from "next/image";
+import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 
 import { styles } from "../styles";
 import { navLinks } from "../constants";
+import { menu, close } from "../assets";
 
 // Memoized NavItem component for better performance
 const NavItem = memo(({ nav, active, setActive, index }) => {
@@ -48,6 +52,8 @@ const NavItem = memo(({ nav, active, setActive, index }) => {
   );
 });
 
+NavItem.displayName = "NavItem";
+
 // Use ARIA roles and improved semantic structure
 const Navbar = () => {
   const [active, setActive] = useState("");
@@ -58,40 +64,44 @@ const Navbar = () => {
 
   // Optimized scroll handler using passive events and throttling
   const handleScroll = useCallback(() => {
-    const currentScrollPos = window.scrollY;
-    
-    // Handle navbar background transition
-    if (currentScrollPos > 100) {
-      setScrolled(true);
-    } else {
-      setScrolled(false);
+    if (typeof window !== 'undefined') {
+      const currentScrollPos = window.scrollY;
+      
+      // Handle navbar background transition
+      if (currentScrollPos > 100) {
+        setScrolled(true);
+      } else {
+        setScrolled(false);
+      }
+      
+      // Auto-hide navbar when scrolling down (but not on mobile)
+      if (window.innerWidth > 768) {
+        setVisible(
+          (prevScrollPos > currentScrollPos) || // Scrolling up
+          currentScrollPos < 10 // At top of page
+        );
+      }
+      
+      setPrevScrollPos(currentScrollPos);
     }
-    
-    // Auto-hide navbar when scrolling down (but not on mobile)
-    if (window.innerWidth > 768) {
-      setVisible(
-        (prevScrollPos > currentScrollPos) || // Scrolling up
-        currentScrollPos < 10 // At top of page
-      );
-    }
-    
-    setPrevScrollPos(currentScrollPos);
   }, [prevScrollPos]);
 
   useEffect(() => {
     // Set initial state based on URL hash if present
-    const hash = window.location.hash;
-    if (hash) {
-      const item = navLinks.find(nav => `#${nav.id}` === hash);
-      if (item) {
-        setActive(item.title);
+    if (typeof window !== 'undefined') {
+      const hash = window.location.hash;
+      if (hash) {
+        const item = navLinks.find(nav => `#${nav.id}` === hash);
+        if (item) {
+          setActive(item.title);
+        }
       }
-    }
-    
-    // Add scroll event listener with options for better performance
-    window.addEventListener("scroll", handleScroll, { passive: true });
+      
+      // Add scroll event listener with options for better performance
+      window.addEventListener("scroll", handleScroll, { passive: true });
 
-    return () => window.removeEventListener("scroll", handleScroll);
+      return () => window.removeEventListener("scroll", handleScroll);
+    }
   }, [handleScroll]);
 
   return (
@@ -108,7 +118,7 @@ const Navbar = () => {
     >
       <div className='w-full flex justify-between items-center max-w-7xl mx-auto'>
         <Link
-          to='/'
+          href='/'
           className='flex items-center gap-3'
           onClick={() => {
             setActive("");

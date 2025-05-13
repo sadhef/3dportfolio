@@ -1,6 +1,9 @@
-// src/components/Contact.jsx
+"use client";
+
 import React, { useRef, useState } from "react";
 import { motion } from "framer-motion";
+import emailjs from "@emailjs/browser";
+
 import { styles } from "../styles";
 import { EarthCanvas } from "./canvas";
 import { SectionWrapper } from "../hoc";
@@ -26,22 +29,21 @@ const Contact = () => {
     });
   };
 
-  // Handle form submission using Web3Forms
+  // Handle form submission using EmailJS
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
-    // Web3Forms public access key
-    const accessKey = "efed4309-e7eb-478b-b0a4-f3f9f15d4176";
-    
-    // Prepare form data
-    const formData = new FormData();
-    formData.append("access_key", accessKey);
-    formData.append("name", form.name);
-    formData.append("email", form.email);
-    formData.append("message", form.message);
-
     try {
+      // Use Web3Forms API for form submission
+      const accessKey = "efed4309-e7eb-478b-b0a4-f3f9f15d4176";
+      
+      const formData = new FormData();
+      formData.append("access_key", accessKey);
+      formData.append("name", form.name);
+      formData.append("email", form.email);
+      formData.append("message", form.message);
+
       const response = await fetch("https://api.web3forms.com/submit", {
         method: "POST",
         body: formData,

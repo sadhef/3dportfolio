@@ -1,22 +1,21 @@
-// src/components/canvas/Earth.jsx
-import React, { Suspense, useRef, useEffect, useState } from "react";
+"use client";
+
+import React, { Suspense, useRef, useEffect } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { OrbitControls, Preload, useGLTF } from "@react-three/drei";
+import { OrbitControls, Preload } from "@react-three/drei";
 import * as THREE from "three";
 
 import CanvasLoader from "../Loader";
+import { useModelLoader, MODEL_PATHS } from "@/utils/model-loader";
 
 const Earth = () => {
-  const [mounted, setMounted] = useState(false);
-  const earth = useGLTF("./planet/scene.gltf");
   const earthRef = useRef();
+  const { scene, isLoaded } = useModelLoader(MODEL_PATHS.EARTH);
 
+  // Apply black and white shader material to all meshes in the model
   useEffect(() => {
-    setMounted(true);
-    
-    // Apply black and white shader material to all meshes in the model
-    if (earth && earth.scene) {
-      earth.scene.traverse((child) => {
+    if (scene) {
+      scene.traverse((child) => {
         if (child.isMesh) {
           // Create a black and white shader material
           const material = new THREE.MeshStandardMaterial({
@@ -29,7 +28,7 @@ const Earth = () => {
         }
       });
     }
-  }, [earth]);
+  }, [scene]);
 
   // Slow rotation
   useFrame(() => {
@@ -38,7 +37,7 @@ const Earth = () => {
     }
   });
 
-  if (!mounted) return null;
+  if (!isLoaded) return null;
 
   return (
     <mesh ref={earthRef}>
@@ -52,22 +51,12 @@ const Earth = () => {
         shadow-mapSize={1024}
       />
       <pointLight intensity={1} />
-      <primitive object={earth.scene} scale={2.5} position-y={0} rotation-y={0} />
+      <primitive object={scene} scale={2.5} position-y={0} rotation-y={0} />
     </mesh>
   );
 };
 
 const EarthCanvas = () => {
-  const [mounted, setMounted] = useState(false);
-  
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-  
-  if (!mounted) {
-    return <StaticEarthImage />;
-  }
-
   return (
     <Canvas
       shadows
@@ -96,15 +85,14 @@ const EarthCanvas = () => {
   );
 };
 
-// Static fallback component in case 3D fails
-export const StaticEarthImage = () => (
-  <div className="w-full h-full flex items-center justify-center">
-    <img 
-      src="./desktop_pc/static-computer.png" 
-      alt="Earth" 
-      className="max-w-full max-h-full object-contain filter grayscale"
-    />
-  </div>
-);
+// Preload models
+export const preloadEarthModel = () => {
+  if (typeof window !== 'undefined') {
+    // This will be called on the client side only
+    import('@/utils/model-loader').then(({ preloadModels, MODEL_PATHS }) => {
+      preloadModels([MODEL_PATHS.EARTH]);
+    });
+  }
+};
 
 export default EarthCanvas;

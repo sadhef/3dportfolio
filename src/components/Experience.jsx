@@ -1,9 +1,12 @@
+"use client";
+
 import React from "react";
+import { motion } from "framer-motion";
+import Image from "next/image";
 import {
   VerticalTimeline,
   VerticalTimelineElement,
 } from "react-vertical-timeline-component";
-import { motion } from "framer-motion";
 
 import "react-vertical-timeline-component/style.min.css";
 
@@ -24,11 +27,15 @@ const ExperienceCard = ({ experience }) => {
       iconStyle={{ background: experience.iconBg, filter: "grayscale(100%)" }} // Grayscale filter for icons
       icon={
         <div className='flex justify-center items-center w-full h-full'>
-          <img
-            src={experience.icon}
-            alt={experience.company_name}
-            className='w-[60%] h-[60%] object-contain'
-          />
+          <div className="relative w-[60%] h-[60%]">
+            <Image
+              src={experience.icon}
+              alt={experience.company_name}
+              fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              className="object-contain"
+            />
+          </div>
         </div>
       }
     >

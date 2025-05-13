@@ -1,4 +1,5 @@
-// src/components/canvas/Stars.jsx
+"use client";
+
 import { useState, useRef, useEffect, useMemo } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Points, PointMaterial } from "@react-three/drei";
@@ -6,30 +7,18 @@ import * as random from "maath/random/dist/maath-random.esm";
 
 const Stars = ({ count = 1000 }) => {
   const ref = useRef();
-  const { performanceTier } = window.deviceCapabilities || { performanceTier: 2 };
   
-  // Reduce star count based on device performance
-  const starCount = useMemo(() => {
-    switch (performanceTier) {
-      case 0: return Math.floor(count * 0.25);
-      case 1: return Math.floor(count * 0.5);
-      case 2: return Math.floor(count * 0.75);
-      default: return count;
-    }
-  }, [count, performanceTier]);
-  
-  // Generate stars only once
-  const [sphere] = useState(() => {
-    return random.inSphere(new Float32Array(starCount * 3), { radius: 1.2 });
-  });
+  // Create stars only once
+  const sphere = useMemo(() => {
+    return random.inSphere(new Float32Array(count * 3), { radius: 1.2 });
+  }, [count]);
   
   // Optimized frame handling
   const frameCount = useRef(0);
-  const frameSkip = performanceTier < 2 ? 3 : 1;
   
   useFrame(() => {
     frameCount.current += 1;
-    if (frameCount.current % frameSkip !== 0) return;
+    if (frameCount.current % 2 !== 0) return;
     
     if (ref.current) {
       ref.current.rotation.x -= 0.0001;
@@ -52,7 +41,7 @@ const Stars = ({ count = 1000 }) => {
   );
 };
 
-// Static fallback for low-end devices
+// Create a static fallback for low-end devices
 const StaticStarsBg = () => (
   <div className="fixed inset-0 z-[-1] bg-black">
     <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#ffffff_1px,transparent_1px)]" 
@@ -61,21 +50,34 @@ const StaticStarsBg = () => (
 );
 
 const StarsCanvas = () => {
-  const [mounted, setMounted] = useState(false);
-  const [shouldRender3D, setShouldRender3D] = useState(false);
+  const [shouldRender3D, setShouldRender3D] = useState(true);
   
   useEffect(() => {
-    // Ensure component is mounted before attempting 3D rendering
-    setMounted(true);
+    // Check device capabilities
+    const checkCapabilities = () => {
+      const isLowEndDevice = 
+        (navigator.hardwareConcurrency && navigator.hardwareConcurrency < 4) ||
+        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      
+      const prefersReducedMotion = 
+        window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      
+      setShouldRender3D(!isLowEndDevice && !prefersReducedMotion);
+    };
     
-    const { performanceTier, prefersReducedMotion } = 
-      window.deviceCapabilities || { performanceTier: 2, prefersReducedMotion: false };
-    
-    // Only render 3D stars on capable devices
-    setShouldRender3D(performanceTier >= 2 && !prefersReducedMotion);
+    if (typeof window !== 'undefined') {
+      checkCapabilities();
+      
+      // Listen for changes
+      const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+      const handleMediaChange = (e) => setShouldRender3D(!e.matches);
+      mediaQuery.addEventListener('change', handleMediaChange);
+      
+      return () => mediaQuery.removeEventListener('change', handleMediaChange);
+    }
   }, []);
-  
-  if (!mounted || !shouldRender3D) {
+
+  if (!shouldRender3D) {
     return <StaticStarsBg />;
   }
 

@@ -45,7 +45,7 @@ export const navLinks = [
   },
 ];
 
-const services = [
+export const services = [
   {
     title: "Web Developer",
     icon: web,
@@ -64,7 +64,7 @@ const services = [
   },
 ];
 
-const technologies = [
+export const technologies = [
   {
     name: "HTML 5",
     icon: html,
@@ -111,9 +111,9 @@ const technologies = [
   },
 ];
 
-const experiences = [
+export const experiences = [
   {
-    title: " Full Stack Developer",
+    title: "Full Stack Developer",
     company_name: "Biztras",
     icon: biztras,
     iconBg: "#383E56",
@@ -121,14 +121,13 @@ const experiences = [
     points: [
       "Developed a web application using React.js, Express.js, Node.js, MongoDB, PostgreSQL, and Docker for containerization, ensuring a scalable and efficient architecture.",
       "Integrated Python for data science, AI, and machine learning functionalities, utilizing Dash to build interactive data visualizations and dashboards.",
-      "Combined React.js for the front-end with Dash in Python to create a seamless user interface, merging the power of React's dynamic components with Python’s data-driven insights.",
+      "Combined React.js for the front-end with Dash in Python to create a seamless user interface, merging the power of React's dynamic components with Python's data-driven insights.",
       "Gained hands-on experience in handling both full-stack web development and data-driven applications, leveraging a diverse tech stack to meet project requirements.",
     ],
   },
-  
 ];
 
-const projects = [
+export const projects = [
   {
     name: "RiField Turf Booking",
     description:
@@ -255,5 +254,3 @@ const projects = [
     source_code_link: "https://magical-gaufre-b5f535.netlify.app/",
   },
 ];
-
-export { services, technologies, experiences, projects };

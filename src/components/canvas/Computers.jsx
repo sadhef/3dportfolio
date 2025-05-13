@@ -1,22 +1,21 @@
-// src/components/canvas/Computers.jsx
+"use client";
+
 import React, { Suspense, useEffect, useState, useRef } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { OrbitControls, Preload, useGLTF } from "@react-three/drei";
+import { OrbitControls, Preload } from "@react-three/drei";
 import * as THREE from "three";
 
 import CanvasLoader from "../Loader";
+import { useModelLoader, MODEL_PATHS } from "@/utils/model-loader";
 
 const Computers = ({ isMobile }) => {
-  const [mounted, setMounted] = useState(false);
-  const computer = useGLTF("./desktop_pc/scene.gltf");
   const computerRef = useRef();
-
+  const { scene, isLoaded } = useModelLoader(MODEL_PATHS.DESKTOP_PC);
+  
+  // Apply black and white shader to all meshes in the model
   useEffect(() => {
-    setMounted(true);
-    
-    // Apply black and white shader to all meshes in the model
-    if (computer && computer.scene) {
-      computer.scene.traverse((child) => {
+    if (scene) {
+      scene.traverse((child) => {
         if (child.isMesh) {
           // Create a monochrome material for all meshes
           const grayScale = 0.8; // Value between 0 (black) and 1 (white)
@@ -28,9 +27,9 @@ const Computers = ({ isMobile }) => {
         }
       });
     }
-  }, [computer]);
+  }, [scene]);
 
-  if (!mounted) return null;
+  if (!isLoaded) return null;
 
   return (
     <mesh ref={computerRef}>
@@ -45,7 +44,7 @@ const Computers = ({ isMobile }) => {
       />
       <pointLight intensity={1} position={[0, 0, 5]} color="#ffffff" />
       <primitive
-        object={computer.scene}
+        object={scene}
         scale={isMobile ? 0.7 : 0.75}
         position={isMobile ? [0, -3, -2.2] : [0, -3.25, -1.5]}
         rotation={[-0.01, -0.2, -0.1]}
@@ -55,11 +54,10 @@ const Computers = ({ isMobile }) => {
 };
 
 const ComputersCanvas = () => {
-  const [mounted, setMounted] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
+    if (typeof window === 'undefined') return;
     
     // Add a listener for changes to the screen size
     const mediaQuery = window.matchMedia("(max-width: 500px)");
@@ -80,14 +78,6 @@ const ComputersCanvas = () => {
       mediaQuery.removeEventListener("change", handleMediaQueryChange);
     };
   }, []);
-
-  if (!mounted) {
-    return (
-      <div className="w-full h-[60vh] flex items-center justify-center">
-        <div className="w-10 h-10 border-2 border-white border-opacity-20 border-t-white rounded-full animate-spin"></div>
-      </div>
-    );
-  }
 
   return (
     <Canvas

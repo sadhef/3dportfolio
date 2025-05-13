@@ -1,6 +1,9 @@
-// src/components/About.jsx
+"use client";
+
 import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
+import Image from "next/image";
+
 import { styles } from "../styles";
 import { services } from "../constants";
 import { SectionWrapper } from "../hoc";
@@ -13,6 +16,8 @@ const ServiceCard = ({ index, title, icon }) => {
   
   // Use Intersection Observer for better performance
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -44,14 +49,16 @@ const ServiceCard = ({ index, title, icon }) => {
       whileHover={{ translateY: -10, transition: { duration: 0.3 } }}
     >
       <div className="bg-tertiary rounded-[20px] py-5 px-12 min-h-[280px] flex justify-evenly items-center flex-col">
-        <img 
-          src={icon} 
-          alt={`${title} icon`} 
-          className="w-16 h-16 object-contain filter grayscale"
-          loading="lazy"
-          width="64"
-          height="64"
-        />
+        <div className="relative w-16 h-16"> 
+          <Image
+            src={icon}
+            alt={`${title} icon`}
+            fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            className="object-contain filter grayscale"
+            priority
+          />
+        </div>
 
         <h3 className="text-white text-[20px] font-bold text-center">
           {title}
@@ -67,6 +74,8 @@ const About = () => {
   
   // Use Intersection Observer to detect when section is visible
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {

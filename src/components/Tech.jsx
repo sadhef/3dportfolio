@@ -1,7 +1,11 @@
+"use client";
+
 import React, { useState, useEffect, useMemo, useRef } from "react";
+import Image from "next/image";
+import { motion, useAnimation } from "framer-motion";
+
 import { SectionWrapper } from "../hoc";
 import { technologies } from "../constants";
-import { motion, useAnimation } from "framer-motion";
 
 // Static TechIcon component for better performance on all devices
 const TechIcon = ({ icon, name, index, isVisible }) => {
@@ -10,7 +14,7 @@ const TechIcon = ({ icon, name, index, isVisible }) => {
   
   // Use Intersection Observer to only render when visible
   useEffect(() => {
-    if (!iconRef.current) return;
+    if (typeof window === 'undefined' || !iconRef.current) return;
     
     const observer = new IntersectionObserver(
       (entries) => {
@@ -44,14 +48,16 @@ const TechIcon = ({ icon, name, index, isVisible }) => {
       {isInView ? (
         <>
           <div className="w-20 h-20 rounded-full bg-gray-800 flex items-center justify-center mb-2">
-            <img 
-              src={icon} 
-              alt={`${name} icon`} 
-              className="w-12 h-12 object-contain filter grayscale"
-              loading="lazy"
-              width="48"
-              height="48"
-            />
+            <div className="relative w-12 h-12">
+              <Image 
+                src={icon} 
+                alt={`${name} icon`}
+                fill
+                sizes="(max-width: 768px) 48px, 48px"
+                className="object-contain filter grayscale"
+                priority={index < 6} // Only prioritize first few icons
+              />
+            </div>
           </div>
           <p className="text-sm text-white-100 text-center font-light">{name}</p>
         </>
@@ -74,6 +80,8 @@ const Tech = () => {
   
   // Use Intersection Observer to trigger animations and progressive loading
   useEffect(() => {
+    if (typeof window === 'undefined' || !sectionRef.current) return;
+    
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -102,15 +110,9 @@ const Tech = () => {
       }
     );
     
-    if (sectionRef.current) {
-      observer.observe(sectionRef.current);
-    }
+    observer.observe(sectionRef.current);
     
-    return () => {
-      if (sectionRef.current) {
-        observer.unobserve(sectionRef.current);
-      }
-    };
+    return () => observer.unobserve(sectionRef.current);
   }, [controls]);
   
   // Only render the visible batch of icons
