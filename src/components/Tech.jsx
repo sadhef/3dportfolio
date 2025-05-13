@@ -1,70 +1,97 @@
+// src/components/Tech.jsx - Performance optimized
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { SectionWrapper } from "../hoc";
 import { technologies } from "../constants";
 import { motion, useAnimation } from "framer-motion";
+import BallCanvas, { StaticBallCanvas } from "./canvas/Ball";
 
-// Optimized TechIcon component for better performance and accessibility
-const TechIcon = ({ icon, name, index, isVisible }) => {
-  // Optimize animation based on device capabilities
+// Performance-optimized TechIcon component with lazy loading
+const TechIcon = ({ icon, name, index, isVisible, useSimpleRenderer }) => {
+  const [isInView, setIsInView] = useState(false);
+  const iconRef = useRef(null);
+  
+  // Detect if device should use reduced motion
   const isMobile = window.innerWidth < 768;
   const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  const performanceTier = window.performanceProfile?.performanceTier || 2;
   
-  // Calculate delay based on index (shorter on mobile)
-  const delay = isMobile ? index * 0.03 : index * 0.05;
+  // Use intersection observer to only render visible items
+  useEffect(() => {
+    if (!iconRef.current) return;
+    
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            setIsInView(true);
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+    
+    observer.observe(iconRef.current);
+    return () => observer.disconnect();
+  }, []);
   
-  // Use simplified animation for reduced motion or mobile
-  const animation = useMemo(() => {
-    if (prefersReducedMotion || isMobile) {
+  // Optimize animation based on device capabilities
+  const animations = useMemo(() => {
+    const shouldReduceMotion = prefersReducedMotion || performanceTier < 2;
+    
+    if (shouldReduceMotion) {
       return {
         initial: { opacity: 0 },
         animate: isVisible ? { opacity: 1 } : { opacity: 0 },
-        transition: { duration: 0.3, delay: delay * 0.5 }
+        transition: { duration: 0.3, delay: index * 0.05 }
       };
     }
     
     return {
       initial: { opacity: 0, y: 10 },
       animate: isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 },
-      transition: { duration: 0.5, delay }
+      transition: { duration: 0.5, delay: index * 0.1 }
     };
-  }, [delay, isVisible, isMobile, prefersReducedMotion]);
+  }, [index, isVisible, prefersReducedMotion, performanceTier]);
+
+  // Determine if we should use 3D or static rendering
+  const shouldUseStatic = useSimpleRenderer || performanceTier < 2 || prefersReducedMotion;
 
   return (
     <motion.div 
-      className="flex flex-col items-center m-3"
-      {...animation}
+      ref={iconRef}
+      className="flex flex-col items-center m-3 w-28"
+      {...animations}
     >
-      <div 
-        className="w-20 h-20 rounded-full bg-gray-800 flex items-center justify-center mb-2"
-        style={{ boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)' }}
-      >
-        <img 
-          src={icon} 
-          alt={`${name} icon`} 
-          className="w-12 h-12 object-contain filter grayscale"
-          loading="lazy"
-          width="48"
-          height="48"
-        />
-      </div>
-      <p className="text-sm text-white-100 text-center font-light">{name}</p>
+      {isInView ? (
+        <>
+          {shouldUseStatic ? (
+            <StaticBallCanvas icon={icon} />
+          ) : (
+            <BallCanvas icon={icon} useSimpleRenderer={useSimpleRenderer} />
+          )}
+          <p className="text-sm text-white-100 text-center font-light mt-2">{name}</p>
+        </>
+      ) : (
+        // Placeholder while loading
+        <div className="w-20 h-20 rounded-full bg-gray-800 animate-pulse"></div>
+      )}
     </motion.div>
   );
 };
 
 // Main Tech component with performance optimizations
-const Tech = () => {
+const Tech = ({ useSimpleRenderer = false }) => {
   const controls = useAnimation();
   const [isVisible, setIsVisible] = useState(false);
   const sectionRef = useRef(null);
   
-  // Use chunking for improved rendering performance
-  const [renderCount, setRenderCount] = useState(6); // Initial render count
+  // Progressive rendering for better performance
+  const [visibleCount, setVisibleCount] = useState(6);
+  const performanceTier = window.performanceProfile?.performanceTier || 2;
   
-  // Split technologies into chunks for better initial load
-  const visibleTechnologies = useMemo(() => {
-    return technologies.slice(0, renderCount);
-  }, [renderCount]);
+  // Calculate batch size based on performance tier
+  const batchSize = performanceTier < 2 ? 3 : 6;
   
   // Use Intersection Observer to trigger animations and progressive loading
   useEffect(() => {
@@ -74,12 +101,19 @@ const Tech = () => {
           setIsVisible(true);
           controls.start("visible");
           
-          // Load remaining technologies progressively
-          const timer = setTimeout(() => {
-            setRenderCount(technologies.length);
-          }, 300);
+          // Progressive loading of tech icons
+          const timer = setInterval(() => {
+            setVisibleCount(prev => {
+              const newCount = prev + batchSize;
+              if (newCount >= technologies.length) {
+                clearInterval(timer);
+                return technologies.length;
+              }
+              return newCount;
+            });
+          }, 200);
           
-          return () => clearTimeout(timer);
+          return () => clearInterval(timer);
         }
       },
       {
@@ -98,7 +132,12 @@ const Tech = () => {
         observer.unobserve(sectionRef.current);
       }
     };
-  }, [controls]);
+  }, [controls, batchSize]);
+  
+  // Only render the visible batch of icons
+  const visibleTechnologies = useMemo(() => {
+    return technologies.slice(0, visibleCount);
+  }, [visibleCount]);
   
   return (
     <section 
@@ -108,7 +147,7 @@ const Tech = () => {
     >
       <h2 
         id="tech-section-title" 
-        className="text-center text-3xl font-bold mb-10 sr-only"
+        className="text-center text-2xl font-bold mb-10"
       >
         Technologies
       </h2>
@@ -123,7 +162,7 @@ const Tech = () => {
             transition: { staggerChildren: 0.05 }
           }
         }}
-        className="flex flex-row flex-wrap justify-center gap-5 mt-10"
+        className="flex flex-wrap justify-center gap-5 mt-10"
       >
         {visibleTechnologies.map((technology, index) => (
           <TechIcon
@@ -132,30 +171,17 @@ const Tech = () => {
             name={technology.name}
             index={index}
             isVisible={isVisible}
+            useSimpleRenderer={useSimpleRenderer}
           />
         ))}
       </motion.div>
       
-      {/* Load indicator for remaining technologies */}
-      {renderCount < technologies.length && isVisible && (
+      {/* Loading indicator for remaining technologies */}
+      {visibleCount < technologies.length && isVisible && (
         <div className="text-center mt-4">
           <div className="inline-block w-6 h-6 border-t-2 border-white rounded-full animate-spin"></div>
         </div>
       )}
-      
-      {/* Add schema markup for SEO */}
-      <div itemScope itemType="https://schema.org/ItemList" className="hidden">
-        <meta itemProp="name" content="Technologies and Skills" />
-        <meta itemProp="description" content="Technologies and programming languages used by Mohammed Sadhef" />
-        {technologies.map((tech, index) => (
-          <div key={index} itemScope itemType="https://schema.org/ListItem" itemProp="itemListElement">
-            <meta itemProp="position" content={index + 1} />
-            <div itemScope itemType="https://schema.org/Thing" itemProp="item">
-              <meta itemProp="name" content={tech.name} />
-            </div>
-          </div>
-        ))}
-      </div>
     </section>
   );
 };

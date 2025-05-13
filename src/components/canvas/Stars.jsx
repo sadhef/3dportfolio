@@ -1,42 +1,50 @@
+// src/components/canvas/Stars.jsx - Performance optimized
 import { useState, useRef, Suspense, useEffect, useMemo } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Points, PointMaterial, Preload } from "@react-three/drei";
 import * as random from "maath/random/dist/maath-random.esm";
 
-// Highly optimized Stars component with memory management
-const StarsPoints = ({ count = 500 }) => { // Reduced count for mobile
+// Highly optimized Stars component with performance tiers
+const StarsPoints = ({ density = 'medium' }) => { 
   const ref = useRef();
-  const [isMobile, setIsMobile] = useState(false);
   
-  // Check if device is mobile on mount
-  useEffect(() => {
-    setIsMobile(window.innerWidth < 768);
-    
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  // Determine star count based on density parameter
+  const getStarCount = (densityLevel) => {
+    switch (densityLevel) {
+      case 'ultra-low': return 100;
+      case 'low': return 200;
+      case 'medium': return 500;
+      case 'high': return 1000;
+      default: return 500;
+    }
+  };
   
-  // Generate stars only once with useMemo and appropriate size based on device
+  const count = getStarCount(density);
+  
+  // Generate stars only once with useMemo
   const sphere = useMemo(() => {
-    // Reduce count significantly for mobile
-    const adjustedCount = isMobile ? Math.min(250, count) : count;
-    return random.inSphere(new Float32Array(adjustedCount * 3), { radius: 1.2 });
-  }, [count, isMobile]);
+    return random.inSphere(new Float32Array(count * 3), { radius: 1.2 });
+  }, [count]);
   
-  // Use a more efficient animation loop with rate limiting
-  useFrame((state, delta) => {
-    if (!ref.current) return;
+  // Optimize animation by calculating frame skips
+  const frameCount = useRef(0);
+  const frameSkip = useMemo(() => {
+    // Skip more frames for lower density (already optimized setup)
+    return density === 'high' ? 1 : density === 'medium' ? 2 : 3;
+  }, [density]);
+  
+  // Optimized animation loop with frame skipping
+  useFrame((state) => {
+    frameCount.current += 1;
     
-    // Only update every other frame on mobile for better performance
-    if (isMobile && state.clock.elapsedTime % 2 < 1) return;
+    // Skip frames based on performance tier
+    if (frameCount.current % frameSkip !== 0) return;
     
-    // Use smaller rotation values for more subtle effect
-    ref.current.rotation.x -= delta * 0.01;
-    ref.current.rotation.y -= delta * 0.01;
+    if (ref.current) {
+      // Reduced rotation values for better performance
+      ref.current.rotation.x -= 0.0002;
+      ref.current.rotation.y -= 0.0002;
+    }
   });
 
   return (
@@ -60,77 +68,79 @@ const StarsPoints = ({ count = 500 }) => { // Reduced count for mobile
 };
 
 // Main component with comprehensive fallbacks
-const StarsCanvas = () => {
+const StarsCanvas = ({ density = 'medium' }) => {
   const [canRender, setCanRender] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
+  
+  // Use a static fallback for browsers without WebGL
+  const StaticStarsFallback = () => (
+    <div className="fixed inset-0 z-[-1] static-stars-bg">
+      <div className="absolute inset-0 bg-black"></div>
+      <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#ffffff_1px,transparent_1px)]" 
+           style={{backgroundSize: "30px 30px"}}></div>
+    </div>
+  );
   
   useEffect(() => {
-    // Check for WebGL support
-    const hasWebGL = () => {
+    // Check for WebGL support with proper capabilities
+    const hasGoodWebGL = () => {
       try {
         const canvas = document.createElement('canvas');
-        return !!(window.WebGLRenderingContext && 
-          (canvas.getContext('webgl') || canvas.getContext('experimental-webgl')));
+        const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+        
+        if (!gl) return false;
+        
+        // Check for minimum texture size capability
+        const maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
+        
+        // Only render if we have decent texture support
+        return maxTextureSize >= 2048;
       } catch (e) {
         return false;
       }
     };
     
-    // Check device capabilities
-    const checkDevice = () => {
-      const mobile = window.innerWidth < 768;
-      setIsMobile(mobile);
+    // Check if we should render stars based on device capabilities
+    const checkRenderCapability = () => {
+      // Get the globally set performance profile or calculate basic version
+      const performanceProfile = window.performanceProfile || {
+        performanceTier: hasGoodWebGL() ? 2 : 1,
+        reduceMotion: window.matchMedia?.('(prefers-reduced-motion: reduce)').matches || false
+      };
       
-      // Only render stars on non-mobile devices with WebGL support
-      const shouldRender = hasWebGL() && !mobile;
+      // Only render stars on devices with decent WebGL support and no motion preferences
+      const shouldRender = 
+        performanceProfile.performanceTier >= 2 && 
+        !performanceProfile.reduceMotion;
+      
       setCanRender(shouldRender);
     };
     
     // Check device on mount
-    checkDevice();
-    
-    // Listen for resize events
-    window.addEventListener('resize', checkDevice);
-    return () => window.removeEventListener('resize', checkDevice);
+    checkRenderCapability();
   }, []);
   
-  // Don't render anything on mobile
-  if (isMobile) {
-    return (
-      <div className="fixed inset-0 z-[-1] static-stars-bg">
-        <div className="absolute inset-0 bg-black"></div>
-        <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#ffffff_1px,transparent_1px)]" 
-             style={{backgroundSize: "20px 20px"}}></div>
-      </div>
-    );
-  }
-  
-  // Don't render if WebGL isn't supported
+  // Return static background if we can't render WebGL stars
   if (!canRender) {
-    return (
-      <div className="fixed inset-0 z-[-1] static-stars-bg">
-        <div className="absolute inset-0 bg-black"></div>
-        <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#ffffff_1px,transparent_1px)]" 
-             style={{backgroundSize: "30px 30px"}}></div>
-      </div>
-    );
+    return <StaticStarsFallback />;
   }
   
   return (
     <div className='w-full h-full fixed inset-0 z-[-1] pointer-events-none'>
       <Canvas 
         camera={{ position: [0, 0, 1] }}
-        dpr={[0.5, 1.5]} // Lower resolution for better performance
+        dpr={[0.5, 1.0]} // Lower resolution for better performance
         frameloop="demand" // Only render when needed
         gl={{ 
           powerPreference: "default", 
           antialias: false, 
           stencil: false,
-          depth: false
+          depth: false,
+          alpha: true
         }}
+        style={{ background: '#000' }}
       >
         <Suspense fallback={null}>
-          <StarsPoints />
+          <StarsPoints density={density} />
         </Suspense>
         <Preload all />
       </Canvas>
