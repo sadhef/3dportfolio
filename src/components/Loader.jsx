@@ -1,7 +1,7 @@
-import { Html, useProgress } from "@react-three/drei";
+// src/components/Loader.jsx
+import { Html } from "@react-three/drei";
 
 const CanvasLoader = () => {
-  const { progress } = useProgress();
   return (
     <Html
       as='div'
@@ -13,17 +13,7 @@ const CanvasLoader = () => {
         flexDirection: "column",
       }}
     >
-      <span className='canvas-loader'></span>
-      <p
-        style={{
-          fontSize: 14,
-          color: "#F1F1F1",
-          fontWeight: 800,
-          marginTop: 40,
-        }}
-      >
-        {progress.toFixed(2)}%
-      </p>
+      <div className="w-8 h-8 border-2 border-white border-opacity-20 border-t-white rounded-full animate-spin"></div>
     </Html>
   );
 };
