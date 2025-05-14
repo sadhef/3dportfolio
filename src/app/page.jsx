@@ -1,11 +1,12 @@
 "use client";
 
-import { Suspense, lazy, useEffect } from "react";
+import { Suspense, lazy } from "react";
 import dynamic from "next/dynamic";
-import { reportWebVitals } from "../utils/web-vitals";
 
-// Import components
+// Import only critical components directly
 import { Navbar } from "../components";
+
+// Lazy load components for better performance
 const Hero = lazy(() => import("../components/Hero"));
 const About = lazy(() => import("../components/About"));
 const Experience = lazy(() => import("../components/Experience"));
@@ -26,18 +27,6 @@ const SectionPlaceholder = () => (
 );
 
 export default function Home() {
-  // Track initial page load performance
-  useEffect(() => {
-    // Report initial page load Web Vitals
-    if (typeof window !== 'undefined') {
-      const { getLCP, getFID, getCLS } = require('web-vitals');
-      
-      getCLS(reportWebVitals);
-      getFID(reportWebVitals);
-      getLCP(reportWebVitals);
-    }
-  }, []);
-
   return (
     <main className="relative z-0 bg-primary">
       <Navbar />
