@@ -4,11 +4,11 @@ const nextConfig = {
   output: 'export',
   // Specify the output directory that Vercel expects
   distDir: 'dist',
-  // Enable static image optimization
+  // Enable image optimization
   images: {
     domains: ['randomuser.me'],
-    // Enable image optimization - essential for Core Web Vitals
-    unoptimized: false,
+    // For static export, images must be unoptimized
+    unoptimized: true,
     // Add image domains for remote images
     remotePatterns: [
       {
@@ -20,17 +20,6 @@ const nextConfig = {
         hostname: 'randomuser.me',
       },
     ],
-    // Define device sizes for responsive images
-    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
-    // Define image sizes for srcset
-    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
-    // Enable higher quality format
-    formats: ['image/avif', 'image/webp'],
-    // Minimize image size by default
-    minimumCacheTTL: 60,
-    // Don't disable static images
-    dangerouslyAllowSVG: true,
-    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
   // Environment variables
   env: {
@@ -84,51 +73,9 @@ const nextConfig = {
           },
         ],
       },
-      {
-        // Special headers for sitemap
-        source: '/sitemap.xml',
-        headers: [
-          {
-            key: 'Content-Type',
-            value: 'application/xml',
-          },
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=86400',
-          },
-        ],
-      },
-      {
-        // Special headers for blog sitemap
-        source: '/blog-sitemap.xml',
-        headers: [
-          {
-            key: 'Content-Type',
-            value: 'application/xml',
-          },
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=86400',
-          },
-        ],
-      },
-      {
-        // Special headers for robots.txt
-        source: '/robots.txt',
-        headers: [
-          {
-            key: 'Content-Type',
-            value: 'text/plain',
-          },
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=86400',
-          },
-        ],
-      },
     ];
   },
-  // Redirects for SEO
+  // Redirects for SEO - replaced with route handling in app
   async redirects() {
     return [
       // Redirect trailing slashes
@@ -137,64 +84,17 @@ const nextConfig = {
         destination: '/:path+',
         permanent: true,
       },
-      // Handle common URL patterns people might try
-      {
-        source: '/about',
-        destination: '/#about',
-        permanent: true,
-      },
-      {
-        source: '/projects',
-        destination: '/#projects',
-        permanent: true,
-      },
-      {
-        source: '/contact',
-        destination: '/#contact',
-        permanent: true,
-      },
-      {
-        source: '/work',
-        destination: '/#work',
-        permanent: true,
-      },
     ];
   },
-  // Configure rewrites for clean URLs
-  async rewrites() {
-    return [
-      {
-        source: '/sitemap',
-        destination: '/sitemap.xml',
-      },
-      {
-        source: '/rss',
-        destination: '/rss.xml',
-      },
-    ];
-  },
-  // Enable React Strict Mode for better development
+  // React Strict Mode for better development
   reactStrictMode: true,
-  // Enable TypeScript - if you're using it
-  typescript: {
-    ignoreBuildErrors: false,
-  },
   // Experimental features for better performance
   experimental: {
     // Optimize CSS
     optimizeCss: true,
-    // Better code splitting
-    optimizePackageImports: [
-      'react', 
-      'react-dom', 
-      'framer-motion', 
-      '@react-three/fiber', 
-      '@react-three/drei', 
-      'three'
-    ],
     // Restore scroll position
     scrollRestoration: true,
-    // Image optimization
+    // Enhanced tracing
     turbotrace: {
       logLevel: 'error',
     },

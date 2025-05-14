@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "generate-sitemap": "node scripts/generate-sitemap.js",
+    "generate-sitemap": "node scripts/generate-enhanced-sitemaps.js",
     "build:prod": "npm run generate-sitemap && next build"
   },
   "dependencies": {
