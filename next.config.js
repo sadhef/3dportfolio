@@ -40,52 +40,6 @@ const nextConfig = {
     });
     return config;
   },
-  // Configure headers for better security and performance
-  async headers() {
-    return [
-      {
-        source: '/(.*)',
-        headers: [
-          {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff',
-          },
-          {
-            key: 'X-Frame-Options',
-            value: 'DENY',
-          },
-          {
-            key: 'X-XSS-Protection',
-            value: '1; mode=block',
-          },
-          {
-            key: 'Referrer-Policy',
-            value: 'strict-origin-when-cross-origin',
-          },
-          {
-            key: 'Permissions-Policy',
-            value: 'camera=(), microphone=(), geolocation=()',
-          },
-          // Cache control for static assets
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable',
-          },
-        ],
-      },
-    ];
-  },
-  // Redirects for SEO - replaced with route handling in app
-  async redirects() {
-    return [
-      // Redirect trailing slashes
-      {
-        source: '/:path+/',
-        destination: '/:path+',
-        permanent: true,
-      },
-    ];
-  },
   // React Strict Mode for better development
   reactStrictMode: true,
   // Experimental features for better performance
