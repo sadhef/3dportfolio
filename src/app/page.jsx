@@ -1,62 +1,78 @@
-"use client";
-
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, useEffect } from "react";
 import dynamic from "next/dynamic";
+import { reportWebVitals } from "../utils/web-vitals";
 
-// Import only critical components directly
+// Import components
 import { Navbar } from "../components";
-
-// Lazy load components for better performance
 const Hero = lazy(() => import("../components/Hero"));
 const About = lazy(() => import("../components/About"));
 const Experience = lazy(() => import("../components/Experience"));
 const Tech = lazy(() => import("../components/Tech"));
 const Works = lazy(() => import("../components/Works"));
 const Contact = lazy(() => import("../components/Contact"));
+const Blog = lazy(() => import("../components/Blog"));
+const FAQ = lazy(() => import("../components/FAQ"));
 
-// Dynamic import with SSR disabled for 3D components (crucial for Next.js)
+// For 3D components (crucial for Next.js)
 const StarsCanvas = dynamic(() => import("../components/canvas/Stars"), { 
   ssr: false 
 });
 
-// Simple placeholder loading component
-const SectionPlaceholder = () => (
-  <div className="w-full h-screen flex items-center justify-center">
-    <div className="w-10 h-10 border-2 border-white border-opacity-20 border-t-white rounded-full animate-spin"></div>
-  </div>
-);
-
 export default function Home() {
+  // Track initial page load performance
+  useEffect(() => {
+    // Report initial page load Web Vitals
+    if (typeof window !== 'undefined') {
+      const { getLCP, getFID, getCLS } = require('web-vitals');
+      
+      getCLS(reportWebVitals);
+      getFID(reportWebVitals);
+      getLCP(reportWebVitals);
+    }
+  }, []);
+
   return (
     <main className="relative z-0 bg-primary">
       <Navbar />
       
-      <Suspense fallback={<SectionPlaceholder />}>
+      <Suspense fallback={<div className="h-screen" />}>
         <Hero />
       </Suspense>
       
-      <Suspense fallback={<SectionPlaceholder />}>
+      <Suspense fallback={<div className="h-screen" />}>
         <About />
       </Suspense>
       
-      <Suspense fallback={<SectionPlaceholder />}>
+      <Suspense fallback={<div className="h-screen" />}>
         <Experience />
       </Suspense>
       
-      <Suspense fallback={<SectionPlaceholder />}>
+      <Suspense fallback={<div className="h-screen" />}>
         <Tech />
       </Suspense>
       
-      <Suspense fallback={<SectionPlaceholder />}>
+      <Suspense fallback={<div className="h-screen" />}>
         <Works />
       </Suspense>
       
-      <Suspense fallback={<SectionPlaceholder />}>
+      {/* New SEO-optimized Blog section */}
+      <Suspense fallback={<div className="h-screen" />}>
+        <Blog />
+      </Suspense>
+      
+      {/* New FAQ section for featured snippets */}
+      <Suspense fallback={<div className="h-screen" />}>
+        <FAQ />
+      </Suspense>
+      
+      <Suspense fallback={<div className="h-screen" />}>
         <Contact />
       </Suspense>
       
-      {/* Always render 3D stars without any conditions */}
       <StarsCanvas />
     </main>
   );
 }
+
+// Export for Web Vitals reporting
+export { reportWebVitals };

@@ -1,3 +1,45 @@
+# robots.txt for https://sadhef.info
 User-agent: *
 Allow: /
+
+# Important content - encourage crawling priority
+Allow: /about
+Allow: /projects
+Allow: /blog
+Allow: /contact
+
+# Set crawl delay for all bots to prevent server overload
+Crawl-delay: 10
+
+# Google specific directives
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 5
+
+User-agent: Googlebot-Image
+Allow: /
+Crawl-delay: 5
+
+User-agent: Googlebot-Mobile
+Allow: /
+Crawl-delay: 5
+
+# Bing specific directives
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 10
+
+# Block certain bots known for excessive crawling
+User-agent: Baiduspider
+Crawl-delay: 20
+
+User-agent: YandexBot
+Crawl-delay: 20
+
+# Block potentially harmful bots
+User-agent: Screaming Frog SEO Spider
+Disallow: /
+
+# Sitemaps
 Sitemap: https://sadhef.info/sitemap.xml
+Sitemap: https://sadhef.info/blog-sitemap.xml
