@@ -1,3 +1,5 @@
+"use client";
+
 import { Suspense, lazy, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { reportWebVitals } from "../utils/web-vitals";
@@ -10,13 +12,18 @@ const Experience = lazy(() => import("../components/Experience"));
 const Tech = lazy(() => import("../components/Tech"));
 const Works = lazy(() => import("../components/Works"));
 const Contact = lazy(() => import("../components/Contact"));
-const Blog = lazy(() => import("../components/Blog"));
-const FAQ = lazy(() => import("../components/FAQ"));
 
-// For 3D components (crucial for Next.js)
+// Dynamic import with SSR disabled for 3D components (crucial for Next.js)
 const StarsCanvas = dynamic(() => import("../components/canvas/Stars"), { 
   ssr: false 
 });
+
+// Simple placeholder loading component
+const SectionPlaceholder = () => (
+  <div className="w-full h-screen flex items-center justify-center">
+    <div className="w-10 h-10 border-2 border-white border-opacity-20 border-t-white rounded-full animate-spin"></div>
+  </div>
+);
 
 export default function Home() {
   // Track initial page load performance
@@ -35,44 +42,32 @@ export default function Home() {
     <main className="relative z-0 bg-primary">
       <Navbar />
       
-      <Suspense fallback={<div className="h-screen" />}>
+      <Suspense fallback={<SectionPlaceholder />}>
         <Hero />
       </Suspense>
       
-      <Suspense fallback={<div className="h-screen" />}>
+      <Suspense fallback={<SectionPlaceholder />}>
         <About />
       </Suspense>
       
-      <Suspense fallback={<div className="h-screen" />}>
+      <Suspense fallback={<SectionPlaceholder />}>
         <Experience />
       </Suspense>
       
-      <Suspense fallback={<div className="h-screen" />}>
+      <Suspense fallback={<SectionPlaceholder />}>
         <Tech />
       </Suspense>
       
-      <Suspense fallback={<div className="h-screen" />}>
+      <Suspense fallback={<SectionPlaceholder />}>
         <Works />
       </Suspense>
       
-      {/* New SEO-optimized Blog section */}
-      <Suspense fallback={<div className="h-screen" />}>
-        <Blog />
-      </Suspense>
-      
-      {/* New FAQ section for featured snippets */}
-      <Suspense fallback={<div className="h-screen" />}>
-        <FAQ />
-      </Suspense>
-      
-      <Suspense fallback={<div className="h-screen" />}>
+      <Suspense fallback={<SectionPlaceholder />}>
         <Contact />
       </Suspense>
       
+      {/* Always render 3D stars without any conditions */}
       <StarsCanvas />
     </main>
   );
 }
-
-// Export for Web Vitals reporting
-export { reportWebVitals };
