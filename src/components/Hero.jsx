@@ -3,11 +3,33 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 
-// 3D Character component with parallax effect
-const AnimatedCharacter = ({ character, index, mouseX, mouseY }) => {
-  // Calculate movement based on mouse position
-  const moveX = mouseX ? (mouseX / (typeof window !== 'undefined' ? window.innerWidth : 1) - 0.5) * 10 : 0;
-  const moveY = mouseY ? (mouseY / (typeof window !== 'undefined' ? window.innerHeight : 1) - 0.5) * 10 : 0;
+// Safer animation calculation with fallbacks
+const calculateMovement = (mouseX, mouseY, index, isClient) => {
+  // Default values for server rendering
+  const defaultWidth = 1920;
+  const defaultHeight = 1080;
+  
+  // Get viewport dimensions (safely)
+  const width = isClient ? window.innerWidth : defaultWidth;
+  const height = isClient ? window.innerHeight : defaultHeight;
+  
+  // Calculate movement with fallbacks
+  const moveX = mouseX ? (mouseX / width - 0.5) * 10 : 0;
+  const moveY = mouseY ? (mouseY / height - 0.5) * 10 : 0;
+  
+  return {
+    x: moveX * (index % 3) * 0.5,
+    y: moveY * (index % 2) * 0.5,
+    rotateY: moveX * 0.5, 
+    rotateX: -moveY * 0.5,
+    textShadow: `${moveX * 0.5}px ${moveY * 0.5}px 5px rgba(0, 0, 0, 0.3)`
+  };
+};
+
+// 3D Character component with consistent parallax effect
+const AnimatedCharacter = ({ character, index, mouseX, mouseY, isClient, animationEnabled }) => {
+  // Calculate movement for each character
+  const movement = calculateMovement(mouseX, mouseY, index, isClient);
   
   // Different animation delay for each character
   const delay = index * 0.05;
@@ -19,10 +41,13 @@ const AnimatedCharacter = ({ character, index, mouseX, mouseY }) => {
       animate={{ 
         opacity: 1, 
         y: 0,
-        x: moveX * (index % 3) * 0.5, // Varying parallax intensity
-        y: moveY * (index % 2) * 0.5,
-        rotateY: moveX * 0.5,
-        rotateX: -moveY * 0.5,
+        // Only apply 3D effects if animations are enabled
+        ...(animationEnabled ? {
+          x: movement.x,
+          y: movement.y,
+          rotateY: movement.rotateY,
+          rotateX: movement.rotateX,
+        } : {})
       }}
       transition={{
         delay: delay,
@@ -32,7 +57,7 @@ const AnimatedCharacter = ({ character, index, mouseX, mouseY }) => {
         y: { duration: 0.1, ease: "linear" },
       }}
       style={{
-        textShadow: `${moveX * 0.5}px ${moveY * 0.5}px 5px rgba(0, 0, 0, 0.3)`,
+        textShadow: animationEnabled ? movement.textShadow : '0px 2px 4px rgba(0, 0, 0, 0.3)',
         transformStyle: "preserve-3d",
         transformOrigin: "center center",
       }}
@@ -42,73 +67,124 @@ const AnimatedCharacter = ({ character, index, mouseX, mouseY }) => {
   );
 };
 
-// Custom hook for mouse position tracking with SSR safety
-const useMousePosition = () => {
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  
-  useEffect(() => {
-    // Only run on client side
-    if (typeof window === 'undefined') return;
-    
-    const handleMouseMove = (e) => {
-      setMousePosition({
-        x: e.clientX,
-        y: e.clientY
-      });
-    };
+// Animation for floating dots with consistent behavior
+const FloatingDots = ({ count = 25, isClient }) => {
+  // Pre-compute random positions for consistency
+  const randomPositions = useRef(Array.from({ length: count }, () => ({
+    initialX: Math.random(),
+    initialY: Math.random(),
+    movementX: [Math.random(), Math.random(), Math.random()],
+    movementY: [Math.random(), Math.random(), Math.random()],
+    duration: 20 + Math.random() * 30
+  }))).current;
 
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, []);
-  
-  return mousePosition;
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {randomPositions.map((position, i) => {
+        // Get viewport dimensions with fallbacks
+        const width = isClient ? window.innerWidth : 1000;
+        const height = isClient ? window.innerHeight : 800;
+        
+        return (
+          <motion.div
+            key={i}
+            className="absolute w-1 h-1 bg-white rounded-full opacity-20"
+            initial={{ 
+              x: position.initialX * width, 
+              y: position.initialY * height 
+            }}
+            animate={{ 
+              x: [
+                position.movementX[0] * width,
+                position.movementX[1] * width,
+                position.movementX[2] * width,
+              ],
+              y: [
+                position.movementY[0] * height,
+                position.movementY[1] * height,
+                position.movementY[2] * height,
+              ],
+            }}
+            transition={{ 
+              duration: position.duration, 
+              repeat: Infinity,
+              ease: "linear" 
+            }}
+          />
+        );
+      })}
+    </div>
+  );
 };
 
+// Main Hero component with consistent animations across devices
 const Hero = () => {
+  // State for client detection & animation control
+  const [isClient, setIsClient] = useState(false);
+  const [animationEnabled, setAnimationEnabled] = useState(true);
+  const [isHighEndDevice, setIsHighEndDevice] = useState(true);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isVisible, setIsVisible] = useState(false);
+  
+  // References & constants
   const heroRef = useRef(null);
   const firstName = "Mohammed";
   const lastName = "Sadhef";
   
-  // Role words that will animate in a typewriter effect
+  // Typewriter effect state
   const [roleIndex, setRoleIndex] = useState(0);
   const [displayedText, setDisplayedText] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
   const roles = ["Full Stack Developer", "MERN Specialist", "Python Developer"];
   
-  // Check for reduced motion preference (safely)
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
-  const [isClient, setIsClient] = useState(false);
-  
-  // Safe useEffect to handle client-side initialization
+  // Initialize client-side functionality
   useEffect(() => {
     setIsClient(true);
-    
-    // Now we can safely access window
-    const handleMouseMove = (e) => {
-      setMousePosition({
-        x: e.clientX,
-        y: e.clientY
-      });
-    };
-    
-    window.addEventListener("mousemove", handleMouseMove);
-    
-    // Check for reduced motion preference
-    setPrefersReducedMotion(
-      window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
-    );
-    
-    // Set visibility
     setIsVisible(true);
     
+    // Performance detection - try to identify low-end devices
+    const detectPerformance = () => {
+      // Check for reduced motion preference
+      const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+      
+      // Simple device capability check
+      const isLowEnd = 
+        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) && 
+        (navigator.deviceMemory < 4 || navigator.hardwareConcurrency < 4);
+      
+      // Set animation state based on device capability
+      setAnimationEnabled(!prefersReducedMotion && !isLowEnd);
+      setIsHighEndDevice(!isLowEnd);
+    };
+    
+    // Mouse tracking with performance throttling
+    let lastMoveTime = 0;
+    const moveThreshold = isHighEndDevice ? 5 : 50; // ms threshold between updates
+    
+    const handleMouseMove = (e) => {
+      const now = Date.now();
+      if (now - lastMoveTime > moveThreshold) {
+        setMousePosition({
+          x: e.clientX,
+          y: e.clientY
+        });
+        lastMoveTime = now;
+      }
+    };
+    
+    // Set up event listeners
+    detectPerformance();
+    window.addEventListener("mousemove", handleMouseMove);
+    
     return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, []);
+  }, [isHighEndDevice]);
   
-  // Typewriter effect - only runs on client
+  // Typewriter effect with performance considerations
   useEffect(() => {
-    if (!isClient || prefersReducedMotion) return; // Skip animation if not client or reduced motion is preferred
+    if (!isClient || !animationEnabled) return;
+    
+    const typingSpeed = isHighEndDevice ? 100 : 150; // slower on low-end devices
+    const deletingSpeed = isHighEndDevice ? 50 : 80;
     
     const interval = setInterval(() => {
       const currentRole = roles[roleIndex];
@@ -132,54 +208,24 @@ const Hero = () => {
           setRoleIndex((roleIndex + 1) % roles.length);
         }
       }
-    }, isDeleting ? 50 : 100); // Type slower, delete faster
+    }, isDeleting ? deletingSpeed : typingSpeed);
     
     return () => clearInterval(interval);
-  }, [displayedText, isDeleting, roleIndex, roles, prefersReducedMotion, isClient]);
+  }, [displayedText, isDeleting, roleIndex, roles, animationEnabled, isClient, isHighEndDevice]);
 
   return (
     <section 
       ref={heroRef}
       id="home"
-      className="relative w-full h-screen mx-auto overflow-hidden flex items-center"
+      className="relative w-full h-screen mx-auto overflow-hidden flex items-center justify-center"
       aria-label="Introduction - Mohammed Sadhef, Full Stack Developer"
     >
-      {/* Animated background dots - only on client side and if reduced motion is not preferred */}
-      {isClient && !prefersReducedMotion && (
-        <div className="absolute inset-0 overflow-hidden">
-          {Array.from({ length: 25 }).map((_, i) => (
-            <motion.div
-              key={i}
-              className="absolute w-1 h-1 bg-white rounded-full opacity-20"
-              initial={{ 
-                x: Math.random() * (typeof window !== 'undefined' ? window.innerWidth : 1000), 
-                y: Math.random() * (typeof window !== 'undefined' ? window.innerHeight : 800) 
-              }}
-              animate={{ 
-                x: [
-                  Math.random() * (typeof window !== 'undefined' ? window.innerWidth : 1000),
-                  Math.random() * (typeof window !== 'undefined' ? window.innerWidth : 1000),
-                  Math.random() * (typeof window !== 'undefined' ? window.innerWidth : 1000),
-                ],
-                y: [
-                  Math.random() * (typeof window !== 'undefined' ? window.innerHeight : 800),
-                  Math.random() * (typeof window !== 'undefined' ? window.innerHeight : 800),
-                  Math.random() * (typeof window !== 'undefined' ? window.innerHeight : 800),
-                ],
-              }}
-              transition={{ 
-                duration: 20 + Math.random() * 30, 
-                repeat: Infinity,
-                ease: "linear" 
-              }}
-            />
-          ))}
-        </div>
-      )}
+      {/* Animated background - conditionally rendered but always present */}
+      {isClient && <FloatingDots isClient={isClient} count={isHighEndDevice ? 25 : 15} />}
       
-      {/* Main content */}
+      {/* Main content wrapper */}
       <div className="relative z-10 max-w-7xl mx-auto px-6 sm:px-16 text-center flex flex-col items-center">
-        {/* Animated title */}
+        {/* Welcome text */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: isVisible ? 1 : 0 }}
@@ -203,28 +249,31 @@ const Hero = () => {
                 key={`first-${index}`}
                 character={char} 
                 index={index} 
-                mouseX={isClient && !prefersReducedMotion ? mousePosition.x : 0} 
-                mouseY={isClient && !prefersReducedMotion ? mousePosition.y : 0} 
+                mouseX={mousePosition.x} 
+                mouseY={mousePosition.y} 
+                isClient={isClient}
+                animationEnabled={animationEnabled}
               />
             ))}
           </div>
           <span className="sm:hidden"><br /></span>
           <span className="hidden sm:inline">&nbsp;</span>
-          {/* Last name with 3D effect */}
           <div className="inline-block">
             {lastName.split("").map((char, index) => (
               <AnimatedCharacter 
                 key={`last-${index}`}
                 character={char} 
                 index={index + firstName.length} 
-                mouseX={isClient && !prefersReducedMotion ? mousePosition.x : 0} 
-                mouseY={isClient && !prefersReducedMotion ? mousePosition.y : 0}
+                mouseX={mousePosition.x} 
+                mouseY={mousePosition.y}
+                isClient={isClient}
+                animationEnabled={animationEnabled}
               />
             ))}
           </div>
         </h1>
         
-        {/* Animated role text (typewriter effect) */}
+        {/* Role text - with consistent typewriter effect */}
         <motion.div
           className="h-8 my-4 sm:my-6 text-white text-lg sm:text-xl"
           initial={{ opacity: 0 }}
@@ -233,9 +282,9 @@ const Hero = () => {
         >
           <span className="font-light">I'm a </span>
           <span className="text-white font-bold relative">
-            {!isClient || prefersReducedMotion ? roles[0] : displayedText}
-            {isClient && !prefersReducedMotion && (
-              <span className="absolute right-0 top-0 h-full w-1 bg-white animate-blink"></span>
+            {!isClient || !animationEnabled ? roles[0] : displayedText}
+            {isClient && animationEnabled && (
+              <span className="absolute -right-1 top-0 h-full w-1 bg-white animate-blink"></span>
             )}
           </span>
         </motion.div>
@@ -251,7 +300,7 @@ const Hero = () => {
           Python, and JavaScript. Integrating AI solutions for innovative digital experiences.
         </motion.p>
         
-        {/* Call to action buttons */}
+        {/* CTA buttons with consistent hover effects */}
         <motion.div
           className="flex flex-wrap justify-center gap-4 mt-4 sm:mt-6"
           initial={{ opacity: 0, y: 20 }}
@@ -261,8 +310,8 @@ const Hero = () => {
           <motion.a
             href="#projects"
             className="px-6 sm:px-8 py-2 sm:py-3 bg-white text-black font-medium rounded-full shadow-lg text-sm sm:text-base"
-            whileHover={{ scale: 1.05, backgroundColor: "#f0f0f0" }}
-            whileTap={{ scale: 0.98 }}
+            whileHover={animationEnabled ? { scale: 1.05, backgroundColor: "#f0f0f0" } : {}}
+            whileTap={animationEnabled ? { scale: 0.98 } : {}}
           >
             View Projects
           </motion.a>
@@ -270,14 +319,14 @@ const Hero = () => {
           <motion.a
             href="#contact"
             className="px-6 sm:px-8 py-2 sm:py-3 border border-white text-white font-medium rounded-full text-sm sm:text-base"
-            whileHover={{ scale: 1.05, backgroundColor: "rgba(255,255,255,0.1)" }}
-            whileTap={{ scale: 0.98 }}
+            whileHover={animationEnabled ? { scale: 1.05, backgroundColor: "rgba(255,255,255,0.1)" } : {}}
+            whileTap={animationEnabled ? { scale: 0.98 } : {}}
           >
             Contact Me
           </motion.a>
         </motion.div>
         
-        {/* Tech tags */}
+        {/* Tech tags with simplified animations for consistency */}
         <motion.div
           className="flex flex-wrap justify-center gap-x-3 gap-y-2 sm:gap-x-4 mt-8 sm:mt-12 max-w-xl"
           initial={{ opacity: 0 }}
@@ -291,31 +340,34 @@ const Hero = () => {
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 1.4 + index * 0.1 }}
-              whileHover={{ scale: 1.1, backgroundColor: "rgba(255,255,255,0.1)" }}
+              whileHover={animationEnabled ? { scale: 1.1, backgroundColor: "rgba(255,255,255,0.1)" } : {}}
             >
               {tech}
             </motion.span>
           ))}
         </motion.div>
         
-        {/* Scroll indicator - only on client and if reduced motion is not preferred */}
-        {isClient && !prefersReducedMotion && (
+        {/* Scroll indicator - optimized for performance */}
+        {isClient && animationEnabled && (
           <motion.div
             className="absolute bottom-10 left-1/2 transform -translate-x-1/2"
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: [0, 1, 0], y: [0, 10, 0] }}
+            initial={{ opacity: 0 }}
+            animate={{ 
+              opacity: isHighEndDevice ? [0, 1, 0] : 1,
+              y: isHighEndDevice ? [0, 10, 0] : 0
+            }}
             transition={{ 
-              repeat: Infinity, 
+              repeat: isHighEndDevice ? Infinity : 0, 
               duration: 2,
               delay: 2 
             }}
           >
             <div className="w-5 h-10 border-2 border-white rounded-full flex justify-center items-start p-2">
               <motion.div
-                animate={{ y: [0, 12, 0] }}
+                animate={{ y: isHighEndDevice ? [0, 12, 0] : [0, 8, 0] }}
                 transition={{ 
                   repeat: Infinity,
-                  duration: 1.5
+                  duration: isHighEndDevice ? 1.5 : 2
                 }}
                 className="w-1 h-1 bg-white rounded-full"
               />
@@ -324,8 +376,8 @@ const Hero = () => {
         )}
       </div>
       
-      {/* Dynamic lighting effect that follows mouse - only on client and if reduced motion is not preferred */}
-      {isClient && !prefersReducedMotion && (
+      {/* Dynamic lighting effect - optimized version */}
+      {isClient && animationEnabled && isHighEndDevice && (
         <div 
           className="pointer-events-none absolute w-full h-full top-0 left-0 opacity-30"
           style={{
@@ -334,7 +386,17 @@ const Hero = () => {
         />
       )}
       
-      {/* Add a stylized custom CSS animation */}
+      {/* Fallback lighting for lower-end devices */}
+      {isClient && animationEnabled && !isHighEndDevice && (
+        <div 
+          className="pointer-events-none absolute w-full h-full top-0 left-0 opacity-20"
+          style={{
+            background: `radial-gradient(circle at 50% 30%, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0.8) 70%)`,
+          }}
+        />
+      )}
+      
+      {/* Styles with better cross-browser compatibility */}
       <style jsx global>{`
         @keyframes blink {
           0%, 100% { opacity: 1; }
@@ -345,6 +407,7 @@ const Hero = () => {
           animation: blink 1s step-end infinite;
         }
         
+        /* More stable text sizing */
         .text-5xl {
           font-size: 3rem;
           line-height: 1;
@@ -353,6 +416,13 @@ const Hero = () => {
         @media (max-width: 640px) {
           .text-5xl {
             font-size: 2.5rem;
+          }
+        }
+        
+        /* Fix for Safari */
+        @supports (-webkit-touch-callout: none) {
+          .hero-text {
+            -webkit-text-fill-color: #ffffff;
           }
         }
       `}</style>
