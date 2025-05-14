@@ -3,30 +3,11 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 
-// Custom hook for mouse position tracking
-const useMousePosition = () => {
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  
-  useEffect(() => {
-    const handleMouseMove = (e) => {
-      setMousePosition({
-        x: e.clientX,
-        y: e.clientY
-      });
-    };
-
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, []);
-  
-  return mousePosition;
-};
-
 // 3D Character component with parallax effect
 const AnimatedCharacter = ({ character, index, mouseX, mouseY }) => {
   // Calculate movement based on mouse position
-  const moveX = (mouseX / window.innerWidth - 0.5) * 10;
-  const moveY = (mouseY / window.innerHeight - 0.5) * 10;
+  const moveX = mouseX ? (mouseX / (typeof window !== 'undefined' ? window.innerWidth : 1) - 0.5) * 10 : 0;
+  const moveY = mouseY ? (mouseY / (typeof window !== 'undefined' ? window.innerHeight : 1) - 0.5) * 10 : 0;
   
   // Different animation delay for each character
   const delay = index * 0.05;
@@ -61,8 +42,30 @@ const AnimatedCharacter = ({ character, index, mouseX, mouseY }) => {
   );
 };
 
+// Custom hook for mouse position tracking with SSR safety
+const useMousePosition = () => {
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  
+  useEffect(() => {
+    // Only run on client side
+    if (typeof window === 'undefined') return;
+    
+    const handleMouseMove = (e) => {
+      setMousePosition({
+        x: e.clientX,
+        y: e.clientY
+      });
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, []);
+  
+  return mousePosition;
+};
+
 const Hero = () => {
-  const { x, y } = useMousePosition();
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isVisible, setIsVisible] = useState(false);
   const heroRef = useRef(null);
   const firstName = "Mohammed";
@@ -74,19 +77,38 @@ const Hero = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const roles = ["Full Stack Developer", "MERN Specialist", "Python Developer"];
   
-  // Check for reduced motion preference
+  // Check for reduced motion preference (safely)
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  const [isClient, setIsClient] = useState(false);
   
+  // Safe useEffect to handle client-side initialization
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      setPrefersReducedMotion(
-        window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
-      );
-    }
+    setIsClient(true);
+    
+    // Now we can safely access window
+    const handleMouseMove = (e) => {
+      setMousePosition({
+        x: e.clientX,
+        y: e.clientY
+      });
+    };
+    
+    window.addEventListener("mousemove", handleMouseMove);
+    
+    // Check for reduced motion preference
+    setPrefersReducedMotion(
+      window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+    );
+    
+    // Set visibility
+    setIsVisible(true);
+    
+    return () => window.removeEventListener("mousemove", handleMouseMove);
   }, []);
   
+  // Typewriter effect - only runs on client
   useEffect(() => {
-    if (prefersReducedMotion) return; // Skip animation if reduced motion is preferred
+    if (!isClient || prefersReducedMotion) return; // Skip animation if not client or reduced motion is preferred
     
     const interval = setInterval(() => {
       const currentRole = roles[roleIndex];
@@ -113,14 +135,7 @@ const Hero = () => {
     }, isDeleting ? 50 : 100); // Type slower, delete faster
     
     return () => clearInterval(interval);
-  }, [displayedText, isDeleting, roleIndex, roles, prefersReducedMotion]);
-  
-  // Observer for entry animation
-  useEffect(() => {
-    if (typeof window === 'undefined' || !heroRef.current) return;
-    
-    setIsVisible(true); // Immediately visible for better user experience
-  }, []);
+  }, [displayedText, isDeleting, roleIndex, roles, prefersReducedMotion, isClient]);
 
   return (
     <section 
@@ -129,27 +144,27 @@ const Hero = () => {
       className="relative w-full h-screen mx-auto overflow-hidden flex items-center"
       aria-label="Introduction - Mohammed Sadhef, Full Stack Developer"
     >
-      {/* Animated background dots - only if reduced motion is not preferred */}
-      {!prefersReducedMotion && (
+      {/* Animated background dots - only on client side and if reduced motion is not preferred */}
+      {isClient && !prefersReducedMotion && (
         <div className="absolute inset-0 overflow-hidden">
           {Array.from({ length: 25 }).map((_, i) => (
             <motion.div
               key={i}
               className="absolute w-1 h-1 bg-white rounded-full opacity-20"
               initial={{ 
-                x: Math.random() * window.innerWidth, 
-                y: Math.random() * window.innerHeight 
+                x: Math.random() * (typeof window !== 'undefined' ? window.innerWidth : 1000), 
+                y: Math.random() * (typeof window !== 'undefined' ? window.innerHeight : 800) 
               }}
               animate={{ 
                 x: [
-                  Math.random() * window.innerWidth,
-                  Math.random() * window.innerWidth,
-                  Math.random() * window.innerWidth,
+                  Math.random() * (typeof window !== 'undefined' ? window.innerWidth : 1000),
+                  Math.random() * (typeof window !== 'undefined' ? window.innerWidth : 1000),
+                  Math.random() * (typeof window !== 'undefined' ? window.innerWidth : 1000),
                 ],
                 y: [
-                  Math.random() * window.innerHeight,
-                  Math.random() * window.innerHeight,
-                  Math.random() * window.innerHeight,
+                  Math.random() * (typeof window !== 'undefined' ? window.innerHeight : 800),
+                  Math.random() * (typeof window !== 'undefined' ? window.innerHeight : 800),
+                  Math.random() * (typeof window !== 'undefined' ? window.innerHeight : 800),
                 ],
               }}
               transition={{ 
@@ -188,8 +203,8 @@ const Hero = () => {
                 key={`first-${index}`}
                 character={char} 
                 index={index} 
-                mouseX={prefersReducedMotion ? 0 : x} 
-                mouseY={prefersReducedMotion ? 0 : y} 
+                mouseX={isClient && !prefersReducedMotion ? mousePosition.x : 0} 
+                mouseY={isClient && !prefersReducedMotion ? mousePosition.y : 0} 
               />
             ))}
           </div>
@@ -202,8 +217,8 @@ const Hero = () => {
                 key={`last-${index}`}
                 character={char} 
                 index={index + firstName.length} 
-                mouseX={prefersReducedMotion ? 0 : x} 
-                mouseY={prefersReducedMotion ? 0 : y}
+                mouseX={isClient && !prefersReducedMotion ? mousePosition.x : 0} 
+                mouseY={isClient && !prefersReducedMotion ? mousePosition.y : 0}
               />
             ))}
           </div>
@@ -218,8 +233,8 @@ const Hero = () => {
         >
           <span className="font-light">I'm a </span>
           <span className="text-white font-bold relative">
-            {prefersReducedMotion ? roles[0] : displayedText}
-            {!prefersReducedMotion && (
+            {!isClient || prefersReducedMotion ? roles[0] : displayedText}
+            {isClient && !prefersReducedMotion && (
               <span className="absolute right-0 top-0 h-full w-1 bg-white animate-blink"></span>
             )}
           </span>
@@ -283,8 +298,8 @@ const Hero = () => {
           ))}
         </motion.div>
         
-        {/* Scroll indicator */}
-        {!prefersReducedMotion && (
+        {/* Scroll indicator - only on client and if reduced motion is not preferred */}
+        {isClient && !prefersReducedMotion && (
           <motion.div
             className="absolute bottom-10 left-1/2 transform -translate-x-1/2"
             initial={{ opacity: 0, y: -10 }}
@@ -309,12 +324,12 @@ const Hero = () => {
         )}
       </div>
       
-      {/* Dynamic lighting effect that follows mouse - only if reduced motion is not preferred */}
-      {!prefersReducedMotion && (
+      {/* Dynamic lighting effect that follows mouse - only on client and if reduced motion is not preferred */}
+      {isClient && !prefersReducedMotion && (
         <div 
           className="pointer-events-none absolute w-full h-full top-0 left-0 opacity-30"
           style={{
-            background: `radial-gradient(circle at ${x}px ${y}px, transparent 0%, rgba(0,0,0,0.8) 70%)`,
+            background: `radial-gradient(circle at ${mousePosition.x}px ${mousePosition.y}px, transparent 0%, rgba(0,0,0,0.8) 70%)`,
           }}
         />
       )}
