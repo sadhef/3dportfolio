@@ -1,32 +1,16 @@
-// src/main.jsx
-import "./three-fix.js"; // Add this at the very top
+import "./three-fix.js";
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
 import "./index.css";
 
-// Immediately detect device capabilities and set performance tier
-const detectDeviceCapabilities = () => {
-  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
-  const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches || false;
-  const isLowEndDevice = navigator.deviceMemory < 4 || navigator.hardwareConcurrency < 4;
-  
-  // Set performance tier: 0 (lowest) to 3 (highest)
-  const performanceTier = 
-    (isLowEndDevice ? 0 : 1) + 
-    (isMobile ? 0 : 1) + 
-    (prefersReducedMotion ? 0 : 1);
-  
-  return {
-    isMobile,
-    prefersReducedMotion,
-    isLowEndDevice,
-    performanceTier
-  };
+// Remove all device capability detection to ensure stars always appear
+window.deviceCapabilities = {
+  isMobile: false,
+  prefersReducedMotion: false,
+  isLowEndDevice: false,
+  performanceTier: 3
 };
-
-// Set global performance config
-window.deviceCapabilities = detectDeviceCapabilities();
 
 // Add critical inline CSS
 const style = document.createElement('style');

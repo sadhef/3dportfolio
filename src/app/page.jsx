@@ -1,14 +1,14 @@
 "use client";
 
-import { Suspense, lazy, useEffect, useState } from "react";
+import { Suspense, lazy } from "react";
 import dynamic from "next/dynamic";
 
 // Import only critical components directly
-import { Navbar } from "../components"; // Changed from @/components
+import { Navbar } from "../components";
 
 // Lazy load components for better performance
-const Hero = lazy(() => import("../components/Hero")); // Changed from @/components/Hero
-const About = lazy(() => import("../components/About")); // Changed from @/components/About
+const Hero = lazy(() => import("../components/Hero"));
+const About = lazy(() => import("../components/About"));
 const Experience = lazy(() => import("../components/Experience"));
 const Tech = lazy(() => import("../components/Tech"));
 const Works = lazy(() => import("../components/Works"));
@@ -16,8 +16,7 @@ const Contact = lazy(() => import("../components/Contact"));
 
 // Dynamic import with SSR disabled for 3D components (crucial for Next.js)
 const StarsCanvas = dynamic(() => import("../components/canvas/Stars"), { 
-  ssr: false,
-  loading: () => null
+  ssr: false 
 });
 
 // Simple placeholder loading component
@@ -28,41 +27,6 @@ const SectionPlaceholder = () => (
 );
 
 export default function Home() {
-  const [isClient, setIsClient] = useState(false);
-  const [devicePerformance, setDevicePerformance] = useState({
-    performanceTier: 2, 
-    prefersReducedMotion: false
-  });
-  
-  useEffect(() => {
-    // Set client-side rendering flag
-    setIsClient(true);
-    
-    // Check device capabilities
-    const detectDeviceCapabilities = () => {
-      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
-      const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches || false;
-      const isLowEndDevice = (navigator.deviceMemory && navigator.deviceMemory < 4) || 
-                            (navigator.hardwareConcurrency && navigator.hardwareConcurrency < 4);
-      
-      // Set performance tier: 0 (lowest) to 3 (highest)
-      const performanceTier = 
-        (isLowEndDevice ? 0 : 1) + 
-        (isMobile ? 0 : 1) + 
-        (prefersReducedMotion ? 0 : 1);
-      
-      setDevicePerformance({
-        performanceTier,
-        prefersReducedMotion
-      });
-    };
-    
-    detectDeviceCapabilities();
-  }, []);
-  
-  // Should render 3D stars?
-  const shouldRender3D = isClient && devicePerformance.performanceTier >= 2 && !devicePerformance.prefersReducedMotion;
-
   return (
     <main className="relative z-0 bg-primary">
       <Navbar />
@@ -91,7 +55,8 @@ export default function Home() {
         <Contact />
       </Suspense>
       
-      {shouldRender3D && <StarsCanvas />}
+      {/* Always render 3D stars without any conditions */}
+      <StarsCanvas />
     </main>
   );
 }
