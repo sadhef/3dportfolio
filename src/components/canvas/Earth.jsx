@@ -12,23 +12,6 @@ const Earth = () => {
   const earthRef = useRef();
   const { scene, isLoaded } = useModelLoader(MODEL_PATHS.EARTH);
 
-  // Apply black and white shader material to all meshes in the model
-  useEffect(() => {
-    if (scene) {
-      scene.traverse((child) => {
-        if (child.isMesh) {
-          // Create a black and white shader material
-          const material = new THREE.MeshStandardMaterial({
-            color: 0xffffff,
-            metalness: 0.5,
-            roughness: 0.5,
-          });
-          
-          child.material = material;
-        }
-      });
-    }
-  }, [scene]);
 
   // Slow rotation
   useFrame(() => {
