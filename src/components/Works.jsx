@@ -142,7 +142,7 @@ const Works = () => {
         >
           Following projects showcase my skills and experience through
           real-world examples of my work. Each project is briefly described with
-          links to code repositories and live demo.
+          links to code repositories and live demos.
         </motion.p>
       </div>
 
