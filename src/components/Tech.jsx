@@ -88,7 +88,7 @@ const Tech = () => {
         animate={isVisible ? { opacity: 1 } : { opacity: 0 }}
         transition={{ duration: 0.6 }}
       >
-        Technologies
+        Technologies I Work With
       </motion.h2>
       
       <div className="flex flex-wrap justify-center gap-4 max-w-4xl mx-auto">
