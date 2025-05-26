@@ -55,7 +55,7 @@ const TechIcon = ({ icon, name, index, isVisible }) => {
                 fill
                 sizes="(max-width: 768px) 48px, 48px"
                 className="object-contain filter grayscale"
-                priority={index < 6} // Only prioritize first few icons
+                priority={index < 18} // Only prioritize first few icons
               />
             </div>
           </div>
