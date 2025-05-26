@@ -122,12 +122,7 @@ const About = () => {
         Additionally, I've developed cross-platform mobile applications using React Native, 
         leveraging RESTful APIs and managing state with Redux/Context API.
       </motion.p>
-
-      <div className="mt-20 flex flex-wrap gap-10 justify-center">
-        {services.map((service, index) => (
-          <ServiceCard key={service.title} index={index} {...service} />
-        ))}
-      </div>
+      
     </div>
   );
 };
