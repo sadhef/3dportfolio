@@ -5,7 +5,7 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { Points, PointMaterial } from "@react-three/drei";
 import * as random from "maath/random/dist/maath-random.esm";
 
-const Stars = ({ count = 5000 }) => {
+const Stars = ({ count = 15000 }) => {
   const ref = useRef();
   
   // Create stars only once using useMemo for performance
@@ -17,7 +17,7 @@ const Stars = ({ count = 5000 }) => {
   useFrame(() => {
     if (ref.current) {
       ref.current.rotation.x -= 0.0005;
-      ref.current.rotation.y -= 0.00020;
+      ref.current.rotation.y -= 0.0005;
     }
   });
 
