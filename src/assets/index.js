@@ -27,12 +27,12 @@ import biztras from "./company/biztras.png";
 import tesla from "./company/tesla.png";
 
 import carrent from "./carrent.png";
-import jobit from "./jobit.png";
+import jobit from "./jobit.webp";
 import tripguide from "./tripguide.png";
-import turf from "./turf.png";
-import biz from "./biz.png";
-import blade from "./blade.png";
-import cook from "./cook.png";
+import turf from "./turf.webp";
+import biz from "./biz.webp";
+import blade from "./blade.webp";
+import cook from "./cook.webp";
 
 export {
   backend,
