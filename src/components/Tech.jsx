@@ -1,89 +1,167 @@
 "use client";
 
-import { memo, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import Image from "next/image";
-import { motion } from "framer-motion";
+import { motion, useAnimation } from "framer-motion";
 
 import { SectionWrapper } from "../hoc";
 import { technologies } from "../constants";
 
-// Memoized TechIcon with simplified animations
-const TechIcon = memo(({ icon, name, index }) => {
+// Static TechIcon component for better performance on all devices
+const TechIcon = ({ icon, name, index, isVisible }) => {
+  const iconRef = useRef(null);
+  const [isInView, setIsInView] = useState(false);
+  
+  // Use Intersection Observer to only render when visible
+  useEffect(() => {
+    if (typeof window === 'undefined' || !iconRef.current) return;
+    
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            setIsInView(true);
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+    
+    observer.observe(iconRef.current);
+    return () => observer.disconnect();
+  }, []);
+  
+  // Simplified animation for better performance
+  const animations = {
+    initial: { opacity: 0 },
+    animate: isVisible ? { opacity: 1 } : { opacity: 0 },
+    transition: { duration: 0.3, delay: index * 0.05 }
+  };
+
   return (
     <motion.div 
-      className="flex flex-col items-center m-4 group cursor-pointer"
-      initial={{ opacity: 0, scale: 0.8 }}
-      whileInView={{ opacity: 1, scale: 1 }}
-      viewport={{ once: true, margin: "-50px" }}
-      transition={{ duration: 0.3, delay: index * 0.03 }}
-      whileHover={{ y: -5, transition: { duration: 0.2 } }}
+      ref={iconRef}
+      className="flex flex-col items-center m-3"
+      {...animations}
     >
-      <div className="w-16 h-16 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 flex items-center justify-center mb-3 transition-all duration-300 group-hover:bg-white/10 group-hover:border-white/20">
-        <div className="relative w-10 h-10">
-          <Image 
-            src={icon} 
-            alt={name}
-            fill
-            sizes="40px"
-            className="object-contain"
-            loading={index < 8 ? "eager" : "lazy"}
-          />
-        </div>
-      </div>
-      
-      <p className="text-sm text-white/80 text-center font-light transition-colors duration-300 group-hover:text-white">
-        {name}
-      </p>
+      {isInView ? (
+        <>
+          <div className="w-20 h-20 rounded-full bg-gray-800 flex items-center justify-center mb-2">
+            <div className="relative w-12 h-12">
+              <Image 
+                src={icon} 
+                alt={`${name} icon`}
+                fill
+                sizes="(max-width: 768px) 48px, 48px"
+                className="object-contain filter grayscale"
+                priority={index < 6} // Only prioritize first few icons
+              />
+            </div>
+          </div>
+          <p className="text-sm text-white-100 text-center font-light">{name}</p>
+        </>
+      ) : (
+        // Placeholder while loading
+        <div className="w-20 h-20 rounded-full bg-gray-800 animate-pulse"></div>
+      )}
     </motion.div>
   );
-});
+};
 
-TechIcon.displayName = 'TechIcon';
-
-// Optimized Tech component
+// Main Tech component with performance optimizations
 const Tech = () => {
-  const containerVariants = useMemo(() => ({
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        duration: 0.6,
-        staggerChildren: 0.05
+  const controls = useAnimation();
+  const [isVisible, setIsVisible] = useState(false);
+  const sectionRef = useRef(null);
+  
+  // Progressive rendering for better performance
+  const [visibleCount, setVisibleCount] = useState(6);
+  
+  // Use Intersection Observer to trigger animations and progressive loading
+  useEffect(() => {
+    if (typeof window === 'undefined' || !sectionRef.current) return;
+    
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          controls.start("visible");
+          
+          // Progressive loading of tech icons
+          const timer = setInterval(() => {
+            setVisibleCount(prev => {
+              const newCount = prev + 3;
+              if (newCount >= technologies.length) {
+                clearInterval(timer);
+                return technologies.length;
+              }
+              return newCount;
+            });
+          }, 200);
+          
+          return () => clearInterval(timer);
+        }
+      },
+      {
+        root: null,
+        rootMargin: "0px",
+        threshold: 0.1
       }
-    }
-  }), []);
-
-  const titleVariants = useMemo(() => ({
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0 }
-  }), []);
-
+    );
+    
+    observer.observe(sectionRef.current);
+    
+    return () => observer.unobserve(sectionRef.current);
+  }, [controls]);
+  
+  // Only render the visible batch of icons
+  const visibleTechnologies = useMemo(() => {
+    return technologies.slice(0, visibleCount);
+  }, [visibleCount]);
+  
   return (
-    <section className="py-16">
-      <motion.div
-        variants={containerVariants}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: "-100px" }}
+    <section 
+      ref={sectionRef}
+      className="relative py-10"
+      aria-labelledby="tech-section-title"
+    >
+      <h2 
+        id="tech-section-title" 
+        className="text-center text-2xl font-bold mb-10"
       >
-        <motion.h2 
-          className="text-center text-3xl font-light mb-12 text-white"
-          variants={titleVariants}
-        >
-          Technologies I Work With
-        </motion.h2>
-        
-        <div className="flex flex-wrap justify-center gap-4 max-w-4xl mx-auto">
-          {technologies.map((technology, index) => (
-            <TechIcon
-              key={technology.name}
-              icon={technology.icon}
-              name={technology.name}
-              index={index}
-            />
-          ))}
-        </div>
+        Technologies
+      </h2>
+      
+      <motion.div
+        initial="hidden"
+        animate={controls}
+        variants={{
+          hidden: { opacity: 0 },
+          visible: { 
+            opacity: 1,
+            transition: { staggerChildren: 0.05 }
+          }
+        }}
+        className="flex flex-wrap justify-center gap-5 mt-10"
+      >
+        {visibleTechnologies.map((technology, index) => (
+          <TechIcon
+            key={technology.name}
+            icon={technology.icon}
+            name={technology.name}
+            index={index}
+            isVisible={isVisible}
+          />
+        ))}
       </motion.div>
+      
+      {/* Loading indicator for remaining technologies */}
+      {visibleCount < technologies.length && isVisible && (
+        <div className="text-center mt-4">
+          <div className="inline-block w-6 h-6 border-t-2 border-white rounded-full animate-spin"></div>
+        </div>
+      )}
     </section>
   );
 };
