@@ -1,7 +1,5 @@
 import EarthCanvas, { preloadEarthModel } from "./Earth";
 import StarsCanvas from "./Stars";
-import ComputersCanvas from "./Computers";
-
 // Client-side preloading of 3D models
 let preloadedModels = false;
 
@@ -22,4 +20,4 @@ if (typeof window !== 'undefined') {
   }
 }
 
-export { EarthCanvas, StarsCanvas, ComputersCanvas };
+export { EarthCanvas, StarsCanvas };
