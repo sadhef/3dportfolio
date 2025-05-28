@@ -7,47 +7,53 @@ import { styles } from "../styles";
 import { SectionWrapper } from "../hoc";
 import { fadeIn, textVariant } from "../utils/motion";
 
-// Quiz data - personalize this according to your preferences
-const QUIZ_DATA = [
+// Letter R puzzle pieces data
+const R_PUZZLE_PIECES = [
   {
     id: 1,
-    type: 'multiple-choice',
-    question: "What's my favorite programming paradigm?",
-    options: ["Object-Oriented", "Functional", "Reactive", "Event-Driven"],
-    correct: 1,
-    funFact: "I love functional programming because it makes code more predictable and easier to test!"
+    path: "M 0,0 L 0,80 L 8,80 L 8,45 L 35,45 L 35,37 L 8,37 L 8,8 L 40,8 L 40,0 Z", // Left vertical line + top horizontal
+    correctPosition: { x: 0, y: 0 },
+    color: "#8B5CF6"
   },
   {
     id: 2,
-    type: 'puzzle',
-    question: "Decode this: 01001000 01100101 01101100 01101100 01101111",
-    hint: "It's binary! Each 8-bit sequence represents an ASCII character.",
-    answer: "hello",
-    funFact: "I started coding when I was curious about how computers understand instructions!"
+    path: "M 40,0 L 40,20 L 48,20 L 48,8 L 65,8 L 65,0 Z", // Top right horizontal
+    correctPosition: { x: 40, y: 0 },
+    color: "#06B6D4"
   },
   {
     id: 3,
-    type: 'multiple-choice',
-    question: "What's my go-to tech stack for rapid prototyping?",
-    options: ["LAMP", "MEAN", "MERN", "Django + React"],
-    correct: 2,
-    funFact: "MERN stack allows me to use JavaScript everywhere - frontend, backend, and database queries!"
+    path: "M 48,8 L 48,37 L 65,37 L 65,29 L 56,29 L 56,8 Z", // Right side upper part
+    correctPosition: { x: 48, y: 8 },
+    color: "#10B981"
   },
   {
     id: 4,
-    type: 'riddle',
-    question: "I'm not a snake, but I'm great for data. I'm not Java, but I'm object-oriented. What am I?",
-    answer: "python",
-    funFact: "Python is my secret weapon for AI/ML projects and data analysis!"
+    path: "M 35,37 L 65,37 L 65,45 L 35,45 Z", // Middle horizontal line
+    correctPosition: { x: 35, y: 37 },
+    color: "#F59E0B"
   },
   {
     id: 5,
-    type: 'multiple-choice',
-    question: "What motivates me most in development?",
-    options: ["Solving complex problems", "Learning new technologies", "Building user-friendly interfaces", "All of the above"],
-    correct: 3,
-    funFact: "I believe great software combines technical excellence with amazing user experience!"
+    path: "M 8,45 L 30,80 L 40,80 L 18,45 Z", // Diagonal line
+    correctPosition: { x: 8, y: 45 },
+    color: "#EF4444"
+  },
+  {
+    id: 6,
+    path: "M 40,45 L 62,80 L 72,80 L 50,45 Z", // Right diagonal line
+    correctPosition: { x: 40, y: 45 },
+    color: "#EC4899"
   }
+];
+
+// Fun facts to reveal when puzzle is completed
+const PUZZLE_COMPLETION_FACTS = [
+  "🚀 I chose 'R' because it represents my passion for React development!",
+  "💡 Problem-solving puzzles like this mirror my approach to debugging complex code.",
+  "🎯 I believe in making technology interactive and engaging, just like this puzzle!",
+  "⚡ My development philosophy: Build experiences that surprise and delight users.",
+  "🔥 When I'm not coding, I love solving puzzles and brain teasers!"
 ];
 
 // Optimized Service Card with memoization
@@ -111,181 +117,277 @@ const ServiceCard = React.memo(({ index, title, icon }) => {
 
 ServiceCard.displayName = 'ServiceCard';
 
-// Quiz Component
-const AboutMeQuiz = ({ onComplete }) => {
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [userAnswers, setUserAnswers] = useState({});
-  const [showResult, setShowResult] = useState(false);
-  const [score, setScore] = useState(0);
-  const [revealedFacts, setRevealedFacts] = useState([]);
-  const [inputValue, setInputValue] = useState('');
-  const [showHint, setShowHint] = useState(false);
+// Letter R Puzzle Component
+const LetterRPuzzle = ({ onComplete }) => {
+  const [pieces, setPieces] = useState(() => 
+    R_PUZZLE_PIECES.map(piece => ({
+      ...piece,
+      currentPosition: {
+        x: Math.random() * 200 + 100,
+        y: Math.random() * 150 + 100
+      },
+      isPlaced: false,
+      isDragging: false
+    }))
+  );
+  
+  const [draggedPiece, setDraggedPiece] = useState(null);
+  const [completedPieces, setCompletedPieces] = useState(0);
+  const [isCompleted, setIsCompleted] = useState(false);
+  const [showCelebration, setShowCelebration] = useState(false);
+  const svgRef = useRef(null);
 
-  const currentQ = useMemo(() => QUIZ_DATA[currentQuestion], [currentQuestion]);
-  const isLastQuestion = useMemo(() => currentQuestion === QUIZ_DATA.length - 1, [currentQuestion]);
+  // Check if piece is in correct position
+  const isInCorrectPosition = useCallback((piece, position) => {
+    const tolerance = 15;
+    return Math.abs(position.x - piece.correctPosition.x) < tolerance &&
+           Math.abs(position.y - piece.correctPosition.y) < tolerance;
+  }, []);
 
-  const handleAnswer = useCallback((answer) => {
-    const newAnswers = { ...userAnswers, [currentQ.id]: answer };
-    setUserAnswers(newAnswers);
-
-    let isCorrect = false;
-    if (currentQ.type === 'multiple-choice') {
-      isCorrect = answer === currentQ.correct;
-    } else {
-      isCorrect = answer.toLowerCase().trim() === currentQ.answer.toLowerCase();
-    }
-
-    if (isCorrect) {
-      setScore(prev => prev + 1);
-      setRevealedFacts(prev => [...prev, currentQ.funFact]);
-    }
-
-    setTimeout(() => {
-      if (isLastQuestion) {
-        setShowResult(true);
-        setTimeout(() => onComplete && onComplete(), 2000);
-      } else {
-        setCurrentQuestion(prev => prev + 1);
-        setInputValue('');
-        setShowHint(false);
-      }
-    }, 1500);
-  }, [currentQ, userAnswers, isLastQuestion, onComplete]);
-
-  const handleInputSubmit = useCallback((e) => {
+  // Handle mouse/touch start
+  const handlePointerDown = useCallback((e, pieceId) => {
     e.preventDefault();
-    if (inputValue.trim()) {
-      handleAnswer(inputValue.trim());
-    }
-  }, [inputValue, handleAnswer]);
+    const piece = pieces.find(p => p.id === pieceId);
+    if (piece.isPlaced) return;
 
-  if (showResult) {
+    setDraggedPiece(pieceId);
+    setPieces(prev => prev.map(p => 
+      p.id === pieceId ? { ...p, isDragging: true } : p
+    ));
+  }, [pieces]);
+
+  // Handle mouse/touch move
+  const handlePointerMove = useCallback((e) => {
+    if (!draggedPiece || !svgRef.current) return;
+
+    const svgRect = svgRef.current.getBoundingClientRect();
+    const clientX = e.clientX || (e.touches && e.touches[0]?.clientX);
+    const clientY = e.clientY || (e.touches && e.touches[0]?.clientY);
+    
+    if (!clientX || !clientY) return;
+
+    const newPosition = {
+      x: clientX - svgRect.left - 20,
+      y: clientY - svgRect.top - 20
+    };
+
+    setPieces(prev => prev.map(p => 
+      p.id === draggedPiece 
+        ? { ...p, currentPosition: newPosition }
+        : p
+    ));
+  }, [draggedPiece]);
+
+  // Handle mouse/touch end
+  const handlePointerUp = useCallback(() => {
+    if (!draggedPiece) return;
+
+    const piece = pieces.find(p => p.id === draggedPiece);
+    const isCorrect = isInCorrectPosition(piece, piece.currentPosition);
+
+    setPieces(prev => prev.map(p => {
+      if (p.id === draggedPiece) {
+        if (isCorrect && !p.isPlaced) {
+          return {
+            ...p,
+            currentPosition: p.correctPosition,
+            isPlaced: true,
+            isDragging: false
+          };
+        }
+        return { ...p, isDragging: false };
+      }
+      return p;
+    }));
+
+    if (isCorrect && !piece.isPlaced) {
+      setCompletedPieces(prev => prev + 1);
+    }
+
+    setDraggedPiece(null);
+  }, [draggedPiece, pieces, isInCorrectPosition]);
+
+  // Check for puzzle completion
+  useEffect(() => {
+    if (completedPieces === R_PUZZLE_PIECES.length && !isCompleted) {
+      setIsCompleted(true);
+      setShowCelebration(true);
+      setTimeout(() => {
+        onComplete?.();
+      }, 3000);
+    }
+  }, [completedPieces, isCompleted, onComplete]);
+
+  // Event listeners
+  useEffect(() => {
+    const handleMouseMove = (e) => handlePointerMove(e);
+    const handleMouseUp = () => handlePointerUp();
+    const handleTouchMove = (e) => handlePointerMove(e);
+    const handleTouchEnd = () => handlePointerUp();
+
+    if (draggedPiece) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      document.addEventListener('touchmove', handleTouchMove, { passive: false });
+      document.addEventListener('touchend', handleTouchEnd);
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+      document.removeEventListener('touchmove', handleTouchMove);
+      document.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [draggedPiece, handlePointerMove, handlePointerUp]);
+
+  // Reset puzzle
+  const resetPuzzle = useCallback(() => {
+    setPieces(R_PUZZLE_PIECES.map(piece => ({
+      ...piece,
+      currentPosition: {
+        x: Math.random() * 200 + 100,
+        y: Math.random() * 150 + 100
+      },
+      isPlaced: false,
+      isDragging: false
+    })));
+    setCompletedPieces(0);
+    setIsCompleted(false);
+    setShowCelebration(false);
+    setDraggedPiece(null);
+  }, []);
+
+  if (isCompleted && showCelebration) {
     return (
       <motion.div
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
         className="bg-tertiary rounded-lg p-6 text-center"
       >
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ delay: 0.2, type: "spring" }}
+          className="text-6xl mb-4"
+        >
+          🎉
+        </motion.div>
         <h3 className="text-2xl font-bold text-white mb-4">
-          Quiz Complete! 🎉
+          Puzzle Completed! Amazing! 🚀
         </h3>
-        <p className="text-secondary mb-4">
-          You scored {score} out of {QUIZ_DATA.length}
-        </p>
         <div className="space-y-3">
-          {revealedFacts.map((fact, index) => (
+          {PUZZLE_COMPLETION_FACTS.map((fact, index) => (
             <motion.p
               key={index}
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: index * 0.3 }}
+              transition={{ delay: 0.5 + index * 0.3 }}
               className="text-sm text-white bg-black-200 rounded p-3"
             >
-              💡 {fact}
+              {fact}
             </motion.p>
           ))}
         </div>
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={resetPuzzle}
+          className="mt-4 px-6 py-2 bg-gradient-to-r from-purple-500 to-cyan-500 text-white rounded-lg"
+        >
+          🔄 Try Again
+        </motion.button>
       </motion.div>
     );
   }
 
   return (
-    <motion.div
-      key={currentQuestion}
-      initial={{ opacity: 0, x: 50 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -50 }}
-      className="bg-tertiary rounded-lg p-6"
-    >
+    <div className="bg-tertiary rounded-lg p-6">
       <div className="mb-4">
         <div className="flex justify-between items-center mb-3">
-          <span className="text-secondary text-sm">
-            Question {currentQuestion + 1} of {QUIZ_DATA.length}
+          <span className="text-white text-lg font-semibold">
+            🧩 Arrange the pieces to form the letter "R"
           </span>
-          <div className="w-32 bg-black-200 rounded-full h-2">
-            <motion.div
-              className="bg-gradient-to-r from-purple-500 to-cyan-500 h-2 rounded-full"
-              initial={{ width: 0 }}
-              animate={{ width: `${((currentQuestion + 1) / QUIZ_DATA.length) * 100}%` }}
-              transition={{ duration: 0.5 }}
-            />
+          <div className="flex items-center gap-4">
+            <span className="text-secondary text-sm">
+              {completedPieces}/{R_PUZZLE_PIECES.length} pieces
+            </span>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={resetPuzzle}
+              className="px-4 py-2 bg-black-200 text-secondary rounded-lg border border-gray-600 text-sm"
+            >
+              🔄 Reset
+            </motion.button>
           </div>
         </div>
-        <h3 className="text-white text-lg font-semibold mb-4">
-          {currentQ.question}
-        </h3>
+        <div className="w-full bg-black-200 rounded-full h-2">
+          <motion.div
+            className="bg-gradient-to-r from-purple-500 to-cyan-500 h-2 rounded-full"
+            initial={{ width: 0 }}
+            animate={{ width: `${(completedPieces / R_PUZZLE_PIECES.length) * 100}%` }}
+            transition={{ duration: 0.5 }}
+          />
+        </div>
       </div>
 
-      {currentQ.type === 'multiple-choice' ? (
-        <div className="space-y-3">
-          {currentQ.options.map((option, index) => (
-            <motion.button
-              key={index}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => handleAnswer(index)}
-              className="w-full text-left p-3 rounded-lg bg-black-200 text-white hover:bg-black-100 transition-colors border border-transparent hover:border-purple-500"
+      <div className="relative">
+        <svg
+          ref={svgRef}
+          width="400"
+          height="300"
+          viewBox="0 0 400 300"
+          className="border border-gray-600 rounded-lg bg-black-100 touch-none select-none"
+          style={{ touchAction: 'none' }}
+        >
+          {/* Target outline (faded) */}
+          <g opacity="0.2" stroke="#666" strokeWidth="1" fill="none" strokeDasharray="3,3">
+            {R_PUZZLE_PIECES.map(piece => (
+              <path
+                key={`outline-${piece.id}`}
+                d={piece.path}
+                transform={`translate(${piece.correctPosition.x + 100}, ${piece.correctPosition.y + 50})`}
+              />
+            ))}
+          </g>
+
+          {/* Puzzle pieces */}
+          {pieces.map(piece => (
+            <motion.g
+              key={piece.id}
+              animate={{
+                x: piece.currentPosition.x + 100,
+                y: piece.currentPosition.y + 50,
+                scale: piece.isDragging ? 1.1 : 1
+              }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              style={{ cursor: piece.isPlaced ? 'default' : 'grab' }}
+              onMouseDown={(e) => handlePointerDown(e, piece.id)}
+              onTouchStart={(e) => handlePointerDown(e, piece.id)}
             >
-              {option}
-            </motion.button>
+              <path
+                d={piece.path}
+                fill={piece.isPlaced ? piece.color : `${piece.color}CC`}
+                stroke={piece.isDragging ? "#fff" : piece.color}
+                strokeWidth={piece.isDragging ? "2" : "1"}
+                filter={piece.isDragging ? "drop-shadow(0 0 10px rgba(255,255,255,0.5))" : "none"}
+              />
+            </motion.g>
           ))}
-        </div>
-      ) : (
-        <div>
-          <form onSubmit={handleInputSubmit} className="space-y-4">
-            <input
-              type="text"
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              placeholder="Type your answer..."
-              className="w-full p-3 rounded-lg bg-black-200 text-white border border-gray-600 focus:border-purple-500 focus:outline-none"
-            />
-            <div className="flex gap-3">
-              <motion.button
-                type="submit"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                disabled={!inputValue.trim()}
-                className="px-6 py-2 bg-gradient-to-r from-purple-500 to-cyan-500 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Submit
-              </motion.button>
-              {currentQ.hint && (
-                <motion.button
-                  type="button"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => setShowHint(!showHint)}
-                  className="px-4 py-2 bg-black-200 text-secondary rounded-lg border border-gray-600"
-                >
-                  💡 Hint
-                </motion.button>
-              )}
-            </div>
-          </form>
-          
-          <AnimatePresence>
-            {showHint && currentQ.hint && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                className="mt-3 p-3 bg-black-100 rounded-lg border-l-4 border-yellow-500"
-              >
-                <p className="text-yellow-300 text-sm">{currentQ.hint}</p>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-      )}
-    </motion.div>
+        </svg>
+
+        <p className="text-secondary text-sm mt-3 text-center">
+          💡 Drag and drop the colorful pieces to form the letter "R". Pieces will snap into place when positioned correctly!
+        </p>
+      </div>
+    </div>
   );
 };
 
 const About = () => {
   const [isVisible, setIsVisible] = useState(false);
-  const [showQuiz, setShowQuiz] = useState(false);
-  const [quizCompleted, setQuizCompleted] = useState(false);
+  const [showPuzzle, setShowPuzzle] = useState(false);
+  const [puzzleCompleted, setPuzzleCompleted] = useState(false);
   const sectionRef = useRef(null);
   
   // Optimized intersection observer with cleanup
@@ -314,17 +416,17 @@ const About = () => {
     };
   }, []);
 
-  const handleQuizComplete = useCallback(() => {
-    setQuizCompleted(true);
-    setTimeout(() => setShowQuiz(false), 3000);
+  const handlePuzzleComplete = useCallback(() => {
+    setPuzzleCompleted(true);
+    setTimeout(() => setShowPuzzle(false), 3000);
   }, []);
 
-  const toggleQuiz = useCallback(() => {
-    setShowQuiz(prev => !prev);
-    if (quizCompleted) {
-      setQuizCompleted(false);
+  const togglePuzzle = useCallback(() => {
+    setShowPuzzle(prev => !prev);
+    if (puzzleCompleted) {
+      setPuzzleCompleted(false);
     }
-  }, [quizCompleted]);
+  }, [puzzleCompleted]);
 
   return (
     <div ref={sectionRef}>
@@ -352,7 +454,7 @@ const About = () => {
         leveraging RESTful APIs and managing state with Redux/Context API.
       </motion.p>
 
-      {/* Interactive Quiz Section */}
+      {/* Interactive Puzzle Section */}
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
@@ -361,44 +463,44 @@ const About = () => {
       >
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-white text-xl font-semibold">
-            🎯 Want to know more about me?
+            🧩 Interactive Challenge
           </h3>
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            onClick={toggleQuiz}
+            onClick={togglePuzzle}
             className={`px-6 py-3 rounded-lg font-medium transition-all ${
-              showQuiz 
+              showPuzzle 
                 ? 'bg-red-500 hover:bg-red-600 text-white' 
-                : quizCompleted
+                : puzzleCompleted
                 ? 'bg-green-500 hover:bg-green-600 text-white'
                 : 'bg-gradient-to-r from-purple-500 to-cyan-500 hover:from-purple-600 hover:to-cyan-600 text-white'
             }`}
           >
-            {showQuiz ? '✕ Close Quiz' : quizCompleted ? '✓ Quiz Completed!' : '🎮 Take the Fun Quiz!'}
+            {showPuzzle ? '✕ Close Puzzle' : puzzleCompleted ? '✓ Puzzle Completed!' : '🎮 Try the Letter R Puzzle!'}
           </motion.button>
         </div>
         
         <AnimatePresence mode="wait">
-          {showQuiz && (
+          {showPuzzle && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.3 }}
             >
-              <AboutMeQuiz onComplete={handleQuizComplete} />
+              <LetterRPuzzle onComplete={handlePuzzleComplete} />
             </motion.div>
           )}
         </AnimatePresence>
 
-        {!showQuiz && !quizCompleted && (
+        {!showPuzzle && !puzzleCompleted && (
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="text-secondary text-sm mt-2"
           >
-            Take a quick interactive quiz to discover fun facts about my coding journey! 🚀
+            Challenge yourself with an interactive puzzle - drag and arrange pieces to form the letter "R"! 🧩✨
           </motion.p>
         )}
       </motion.div>
