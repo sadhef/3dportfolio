@@ -1,69 +1,29 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import Image from "next/image"; // Assuming this was intended for ServiceCard
 
 import { styles } from "../styles";
 import { SectionWrapper } from "../hoc";
 import { fadeIn, textVariant } from "../utils/motion";
 
-// Letter R puzzle pieces data
-const R_PUZZLE_PIECES = [
-  {
-    id: 1,
-    path: "M 0,0 L 0,80 L 8,80 L 8,45 L 35,45 L 35,37 L 8,37 L 8,8 L 40,8 L 40,0 Z", // Left vertical line + top horizontal
-    correctPosition: { x: 0, y: 0 },
-    color: "#8B5CF6"
-  },
-  {
-    id: 2,
-    path: "M 40,0 L 40,20 L 48,20 L 48,8 L 65,8 L 65,0 Z", // Top right horizontal
-    correctPosition: { x: 40, y: 0 },
-    color: "#06B6D4"
-  },
-  {
-    id: 3,
-    path: "M 48,8 L 48,37 L 65,37 L 65,29 L 56,29 L 56,8 Z", // Right side upper part
-    correctPosition: { x: 48, y: 8 },
-    color: "#10B981"
-  },
-  {
-    id: 4,
-    path: "M 35,37 L 65,37 L 65,45 L 35,45 Z", // Middle horizontal line
-    correctPosition: { x: 35, y: 37 },
-    color: "#F59E0B"
-  },
-  {
-    id: 5,
-    path: "M 8,45 L 30,80 L 40,80 L 18,45 Z", // Diagonal line
-    correctPosition: { x: 8, y: 45 },
-    color: "#EF4444"
-  },
-  {
-    id: 6,
-    path: "M 40,45 L 62,80 L 72,80 L 50,45 Z", // Right diagonal line
-    correctPosition: { x: 40, y: 45 },
-    color: "#EC4899"
-  }
-];
-
-// Fun facts to reveal when puzzle is completed
+// Fun facts (can remain as is or be updated)
 const PUZZLE_COMPLETION_FACTS = [
-  "🚀 I chose 'R' because it represents my passion for React development!",
-  "💡 Problem-solving puzzles like this mirror my approach to debugging complex code.",
-  "🎯 I believe in making technology interactive and engaging, just like this puzzle!",
-  "⚡ My development philosophy: Build experiences that surprise and delight users.",
-  "🔥 When I'm not coding, I love solving puzzles and brain teasers!"
+  "💖 You guessed it! Rifa is a special name!",
+  "💡 Finding the right word is like finding a special connection.",
+  "🎯 We're a perfect match, just like the letters in Rifa!",
+  "⚡ This puzzle was a journey, and you navigated it beautifully!",
+  "🔥 Thanks for playing! Your guess warmed my heart!",
 ];
 
-// Optimized Service Card with memoization
+// --- UNCHANGED ServiceCard (Include from previous response) ---
 const ServiceCard = React.memo(({ index, title, icon }) => {
   const [isVisible, setIsVisible] = useState(false);
   const cardRef = useRef(null);
   
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -73,17 +33,9 @@ const ServiceCard = React.memo(({ index, title, icon }) => {
       },
       { threshold: 0.1, rootMargin: '50px' }
     );
-    
     const currentRef = cardRef.current;
-    if (currentRef) {
-      observer.observe(currentRef);
-    }
-    
-    return () => {
-      if (currentRef) {
-        observer.unobserve(currentRef);
-      }
-    };
+    if (currentRef) observer.observe(currentRef);
+    return () => { if (currentRef) observer.unobserve(currentRef); };
   }, []);
 
   return (
@@ -107,157 +59,262 @@ const ServiceCard = React.memo(({ index, title, icon }) => {
             loading={index < 3 ? "eager" : "lazy"}
           />
         </div>
-        <h3 className="text-white text-[20px] font-bold text-center">
-          {title}
-        </h3>
+        <h3 className="text-white text-[20px] font-bold text-center">{title}</h3>
       </div>
     </motion.div>
   );
 });
-
 ServiceCard.displayName = 'ServiceCard';
+// --- END UNCHANGED ServiceCard ---
 
-// Letter R Puzzle Component
-const LetterRPuzzle = ({ onComplete }) => {
-  const [pieces, setPieces] = useState(() => 
-    R_PUZZLE_PIECES.map(piece => ({
-      ...piece,
-      currentPosition: {
-        x: Math.random() * 200 + 100,
-        y: Math.random() * 150 + 100
-      },
-      isPlaced: false,
-      isDragging: false
-    }))
-  );
+
+const TARGET_WORD = "RIFA";
+const WORD_LENGTH = 4;
+const MAX_ATTEMPTS = 3;
+
+const getGuessFeedback = (guess, target) => {
+  const feedback = new Array(WORD_LENGTH).fill('absent');
+  const targetArray = target.split('');
+  const guessArray = guess.split('');
+  const usedTargetIndices = new Array(WORD_LENGTH).fill(false);
+
+  for (let i = 0; i < WORD_LENGTH; i++) {
+    if (guessArray[i] === targetArray[i]) {
+      feedback[i] = 'correct';
+      usedTargetIndices[i] = true;
+    }
+  }
+
+  for (let i = 0; i < WORD_LENGTH; i++) {
+    if (feedback[i] === 'correct') continue;
+    const charIndexInTarget = targetArray.findIndex(
+      (char, index) => char === guessArray[i] && !usedTargetIndices[index]
+    );
+    if (charIndexInTarget !== -1) {
+      feedback[i] = 'present';
+      usedTargetIndices[charIndexInTarget] = true;
+    }
+  }
+  return feedback;
+};
+
+// Individual Tile Component - UPDATED
+const Tile = ({ char, feedback, isRevealed, isCompleted, delay }) => {
+  const feedbackColors = {
+    correct: "bg-green-500 border-green-500", // Green for correct
+    present: "bg-amber-500 border-amber-500", // Amber/Orange for present
+    absent: "bg-gray-700 border-gray-700",
+    default: "bg-transparent border-gray-500",
+    typing: "border-gray-400"
+  };
+
+  const getBgColor = () => {
+    if (isRevealed) return feedbackColors[feedback] || feedbackColors.absent;
+    if (char) return feedbackColors.typing;
+    return feedbackColors.default;
+  };
   
-  const [draggedPiece, setDraggedPiece] = useState(null);
-  const [completedPieces, setCompletedPieces] = useState(0);
-  const [isCompleted, setIsCompleted] = useState(false);
-  const [showCelebration, setShowCelebration] = useState(false);
-  const svgRef = useRef(null);
+  const variants = {
+    initial: { rotateX: 0, scale: char ? 1.05 : 1},
+    revealed: { rotateX: 180 },
+    completed: { scale: [1, 1.1, 1, 1.1, 1], transition: {delay: delay + 0.5, duration: 0.5}}
+  };
 
-  // Check if piece is in correct position
-  const isInCorrectPosition = useCallback((piece, position) => {
-    const tolerance = 15;
-    return Math.abs(position.x - piece.correctPosition.x) < tolerance &&
-           Math.abs(position.y - piece.correctPosition.y) < tolerance;
-  }, []);
+  return (
+    // The parent div that performs the flip animation
+    <motion.div
+      className="relative w-14 h-14 md:w-16 md:h-16"
+      // CRITICAL FIX: Added transformStyle: "preserve-3d"
+      style={{ perspective: "1000px", transformStyle: "preserve-3d" }} 
+      initial="initial"
+      animate={isCompleted && feedback === 'correct' ? "completed" : (isRevealed ? "revealed" : "initial")}
+      variants={variants}
+      transition={{ duration: 0.5, delay: isRevealed ? delay : 0 }}
+    >
+      {/* Front of the tile (visible before flip) */}
+      <motion.div
+        className={`absolute w-full h-full flex items-center justify-center text-2xl md:text-3xl font-bold uppercase text-white border-2 ${char && !isRevealed ? feedbackColors.typing : feedbackColors.default} rounded`}
+        style={{ backfaceVisibility: "hidden" }} // Hides this face when it's turned away
+      >
+        {char}
+      </motion.div>
+      {/* Back of the tile (visible after flip) */}
+      <motion.div
+        className={`absolute w-full h-full flex items-center justify-center text-2xl md:text-3xl font-bold uppercase text-white border-2 ${getBgColor()} rounded`}
+        // This face is initially rotated 180deg; when parent flips 180deg, this face becomes visible and correctly oriented
+        style={{ backfaceVisibility: "hidden", transform: "rotateX(180deg)" }} 
+      >
+        {char} 
+      </motion.div>
+    </motion.div>
+  );
+};
 
-  // Handle mouse/touch start
-  const handlePointerDown = useCallback((e, pieceId) => {
-    e.preventDefault();
-    const piece = pieces.find(p => p.id === pieceId);
-    if (piece.isPlaced) return;
 
-    setDraggedPiece(pieceId);
-    setPieces(prev => prev.map(p => 
-      p.id === pieceId ? { ...p, isDragging: true } : p
-    ));
-  }, [pieces]);
+// Keyboard Key Component - UPDATED
+const Key = ({ value, status, onClick }) => {
+  const statusColors = {
+    correct: "bg-green-600 hover:bg-green-700",
+    present: "bg-amber-600 hover:bg-amber-700", // Amber/Orange for present
+    absent: "bg-gray-700 hover:bg-gray-800",
+    default: "bg-gray-500 hover:bg-gray-600",
+  };
+  return (
+    <button
+      onClick={() => onClick(value)}
+      className={`h-12 md:h-14 rounded font-bold uppercase text-white text-sm md:text-base transition-colors duration-150
+                  ${statusColors[status] || statusColors.default}
+                  ${value === 'ENTER' || value === 'DEL' ? 'px-2 md:px-3 flex-grow-[1.5]' : 'px-2 md:px-3 flex-grow'}`}
+    >
+      {value === 'DEL' ? '⌫' : value}
+    </button>
+  );
+};
 
-  // Handle mouse/touch move
-  const handlePointerMove = useCallback((e) => {
-    if (!draggedPiece || !svgRef.current) return;
+// --- WordlyPuzzle Component (Main logic - largely same as before, ensure it uses updated Tile and Key) ---
+// Include the full WordlyPuzzle component from the previous response.
+// The critical changes are within Tile and Key components above.
+const WordlyPuzzle = ({ onComplete }) => {
+  const [gameState, setGameState] = useState('playing'); // 'playing', 'won', 'lost'
+  const [guesses, setGuesses] = useState(Array(MAX_ATTEMPTS).fill("").map(() => Array(WORD_LENGTH).fill("")));
+  const [feedbackGrid, setFeedbackGrid] = useState(Array(MAX_ATTEMPTS).fill("").map(() => Array(WORD_LENGTH).fill("default")));
+  const [revealedState, setRevealedState] = useState(Array(MAX_ATTEMPTS).fill(false));
+  const [currentAttempt, setCurrentAttempt] = useState(0);
+  const [currentGuessChars, setCurrentGuessChars] = useState([]);
+  const [letterStatuses, setLetterStatuses] = useState({}); // For keyboard
+  const [toast, setToast] = useState({ show: false, message: "" });
+  const [shakeRow, setShakeRow] = useState(false);
+  const [showLoveCelebration, setShowLoveCelebration] = useState(false);
 
-    const svgRect = svgRef.current.getBoundingClientRect();
-    const clientX = e.clientX || (e.touches && e.touches[0]?.clientX);
-    const clientY = e.clientY || (e.touches && e.touches[0]?.clientY);
-    
-    if (!clientX || !clientY) return;
+  const showToast = (message) => {
+    setToast({ show: true, message });
+    setTimeout(() => setToast({ show: false, message: "" }), 2000);
+  };
+  
+  const handleKeyPress = useCallback((key) => {
+    if (gameState !== 'playing') return;
 
-    const newPosition = {
-      x: clientX - svgRect.left - 20,
-      y: clientY - svgRect.top - 20
-    };
-
-    setPieces(prev => prev.map(p => 
-      p.id === draggedPiece 
-        ? { ...p, currentPosition: newPosition }
-        : p
-    ));
-  }, [draggedPiece]);
-
-  // Handle mouse/touch end
-  const handlePointerUp = useCallback(() => {
-    if (!draggedPiece) return;
-
-    const piece = pieces.find(p => p.id === draggedPiece);
-    const isCorrect = isInCorrectPosition(piece, piece.currentPosition);
-
-    setPieces(prev => prev.map(p => {
-      if (p.id === draggedPiece) {
-        if (isCorrect && !p.isPlaced) {
-          return {
-            ...p,
-            currentPosition: p.correctPosition,
-            isPlaced: true,
-            isDragging: false
-          };
-        }
-        return { ...p, isDragging: false };
+    if (key === 'ENTER') {
+      if (currentGuessChars.length !== WORD_LENGTH) {
+        showToast("Not enough letters");
+        setShakeRow(true);
+        setTimeout(() => setShakeRow(false), 600);
+        return;
       }
-      return p;
-    }));
-
-    if (isCorrect && !piece.isPlaced) {
-      setCompletedPieces(prev => prev + 1);
+      processGuess();
+    } else if (key === 'DEL' || key === 'BACKSPACE') {
+      setCurrentGuessChars(prev => prev.slice(0, -1));
+    } else if (currentGuessChars.length < WORD_LENGTH && /^[A-Z]$/i.test(key)) {
+      setCurrentGuessChars(prev => [...prev, key.toUpperCase()]);
     }
+  }, [currentGuessChars, currentAttempt, gameState, guesses]); // Added guesses to dependencies
 
-    setDraggedPiece(null);
-  }, [draggedPiece, pieces, isInCorrectPosition]);
-
-  // Check for puzzle completion
   useEffect(() => {
-    if (completedPieces === R_PUZZLE_PIECES.length && !isCompleted) {
-      setIsCompleted(true);
-      setShowCelebration(true);
-      setTimeout(() => {
-        onComplete?.();
-      }, 3000);
-    }
-  }, [completedPieces, isCompleted, onComplete]);
-
-  // Event listeners
-  useEffect(() => {
-    const handleMouseMove = (e) => handlePointerMove(e);
-    const handleMouseUp = () => handlePointerUp();
-    const handleTouchMove = (e) => handlePointerMove(e);
-    const handleTouchEnd = () => handlePointerUp();
-
-    if (draggedPiece) {
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
-      document.addEventListener('touchmove', handleTouchMove, { passive: false });
-      document.addEventListener('touchend', handleTouchEnd);
-    }
-
-    return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-      document.removeEventListener('touchmove', handleTouchMove);
-      document.removeEventListener('touchend', handleTouchEnd);
+    const physicalKeyboardListener = (e) => {
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      if (e.key === 'Enter') handleKeyPress('ENTER');
+      else if (e.key === 'Backspace') handleKeyPress('DEL');
+      else if (e.key.length === 1 && e.key.match(/^[a-zA-Z]$/)) handleKeyPress(e.key.toUpperCase());
     };
-  }, [draggedPiece, handlePointerMove, handlePointerUp]);
+    window.addEventListener('keydown', physicalKeyboardListener);
+    return () => window.removeEventListener('keydown', physicalKeyboardListener);
+  }, [handleKeyPress]);
 
-  // Reset puzzle
+
+  const processGuess = () => {
+    const guessStr = currentGuessChars.join('');
+    const currentFeedback = getGuessFeedback(guessStr, TARGET_WORD);
+
+    const newGuesses = guesses.map((row, rIdx) => 
+      rIdx === currentAttempt ? [...currentGuessChars, ...Array(WORD_LENGTH - currentGuessChars.length).fill('')] : row
+    );
+    setGuesses(newGuesses);
+
+    const newFeedbackGrid = feedbackGrid.map((row, rIdx) =>
+      rIdx === currentAttempt ? currentFeedback : row
+    );
+    setFeedbackGrid(newFeedbackGrid);
+    
+    const newRevealedState = [...revealedState];
+    newRevealedState[currentAttempt] = true;
+    setRevealedState(newRevealedState);
+
+    const newLetterStatuses = { ...letterStatuses };
+    guessStr.split('').forEach((char, index) => {
+      const status = currentFeedback[index];
+      if (newLetterStatuses[char] === 'correct') return;
+      if (newLetterStatuses[char] === 'present' && status !== 'correct') return;
+      newLetterStatuses[char] = status;
+    });
+    setLetterStatuses(newLetterStatuses);
+
+    setTimeout(() => {
+      if (guessStr === TARGET_WORD) {
+        setGameState('won');
+        setShowLoveCelebration(true);
+        showToast("You found Rifa! ❤️");
+        // Ensure onComplete is called after a delay to show celebration
+        setTimeout(() => { // Added extra delay for onComplete
+            onComplete?.();
+        }, 2000); // Delay for celebration visibility before potential puzzle closure
+      } else if (currentAttempt + 1 >= MAX_ATTEMPTS) {
+        setGameState('lost');
+        showToast(`Game Over! The word was ${TARGET_WORD}.`);
+      } else {
+        setCurrentAttempt(prev => prev + 1);
+        setCurrentGuessChars([]);
+      }
+    }, WORD_LENGTH * 300); 
+  };
+  
   const resetPuzzle = useCallback(() => {
-    setPieces(R_PUZZLE_PIECES.map(piece => ({
-      ...piece,
-      currentPosition: {
-        x: Math.random() * 200 + 100,
-        y: Math.random() * 150 + 100
-      },
-      isPlaced: false,
-      isDragging: false
-    })));
-    setCompletedPieces(0);
-    setIsCompleted(false);
-    setShowCelebration(false);
-    setDraggedPiece(null);
-  }, []);
+    setGameState('playing');
+    setGuesses(Array(MAX_ATTEMPTS).fill("").map(() => Array(WORD_LENGTH).fill("")));
+    setFeedbackGrid(Array(MAX_ATTEMPTS).fill("").map(() => Array(WORD_LENGTH).fill("default")));
+    setRevealedState(Array(MAX_ATTEMPTS).fill(false));
+    setCurrentAttempt(0);
+    setCurrentGuessChars([]);
+    setLetterStatuses({});
+    setToast({ show: false, message: "" });
+    setShowLoveCelebration(false);
+    // onComplete should not be called here, it's for successful completion signaling.
+  }, []); // Removed onComplete from resetPuzzle dependencies as it's not directly used for resetting
 
-  if (isCompleted && showCelebration) {
+
+  const grid = [];
+  for (let i = 0; i < MAX_ATTEMPTS; i++) {
+    const rowChars = (i === currentAttempt) ? currentGuessChars : guesses[i];
+    const rowFeedback = feedbackGrid[i];
+    const isRowRevealed = revealedState[i];
+    
+    grid.push(
+      <motion.div 
+        key={i} 
+        className="grid grid-cols-4 gap-1.5 md:gap-2"
+        animate={shakeRow && i === currentAttempt ? { x: [-5, 5, -5, 5, 0] } : {}}
+        transition={{ duration: 0.5 }}
+      >
+        {Array.from({ length: WORD_LENGTH }).map((_, j) => (
+          <Tile
+            key={j}
+            char={rowChars[j] || ""}
+            feedback={rowFeedback[j]}
+            isRevealed={isRowRevealed}
+            isCompleted={gameState === 'won' && i === currentAttempt}
+            delay={j * 0.2} 
+          />
+        ))}
+      </motion.div>
+    );
+  }
+
+  const keyboardLayout = [
+    ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
+    ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'],
+    ['ENTER', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', 'DEL']
+  ];
+
+  if (gameState === 'won' && showLoveCelebration) {
     return (
       <motion.div
         initial={{ opacity: 0, scale: 0.8 }}
@@ -266,185 +323,141 @@ const LetterRPuzzle = ({ onComplete }) => {
       >
         <motion.div
           initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ delay: 0.2, type: "spring" }}
+          animate={{ scale: [1, 1.5, 1] }}
+          transition={{ delay: 0.2, type: "spring", duration: 1, repeat: Infinity, repeatType: "loop", repeatDelay: 1 }}
           className="text-6xl mb-4"
         >
-          🎉
+          💖✨❤️
         </motion.div>
         <h3 className="text-2xl font-bold text-white mb-4">
-          Puzzle Completed! Amazing! 🚀
+          You found Rifa! It's a match! 🎉
         </h3>
         <div className="space-y-3">
           {PUZZLE_COMPLETION_FACTS.map((fact, index) => (
-            <motion.p
-              key={index}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.5 + index * 0.3 }}
-              className="text-sm text-white bg-black-200 rounded p-3"
-            >
+            <motion.p key={index} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.5 + index * 0.3 }}
+                      className="text-sm text-white bg-black-200 rounded p-3">
               {fact}
             </motion.p>
           ))}
         </div>
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={resetPuzzle}
-          className="mt-4 px-6 py-2 bg-gradient-to-r from-purple-500 to-cyan-500 text-white rounded-lg"
-        >
-          🔄 Try Again
+        <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={resetPuzzle}
+                       className="mt-6 px-6 py-3 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-lg font-semibold">
+          🔄 Play Again
         </motion.button>
       </motion.div>
     );
   }
 
   return (
-    <div className="bg-tertiary rounded-lg p-6">
-      <div className="mb-4">
-        <div className="flex justify-between items-center mb-3">
-          <span className="text-white text-lg font-semibold">
-            🧩 Arrange the pieces to form the letter "R"
-          </span>
-          <div className="flex items-center gap-4">
-            <span className="text-secondary text-sm">
-              {completedPieces}/{R_PUZZLE_PIECES.length} pieces
-            </span>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={resetPuzzle}
-              className="px-4 py-2 bg-black-200 text-secondary rounded-lg border border-gray-600 text-sm"
-            >
-              🔄 Reset
-            </motion.button>
-          </div>
-        </div>
-        <div className="w-full bg-black-200 rounded-full h-2">
+    <div className="bg-tertiary rounded-lg p-4 md:p-6 flex flex-col items-center">
+      <AnimatePresence>
+        {toast.show && (
           <motion.div
-            className="bg-gradient-to-r from-purple-500 to-cyan-500 h-2 rounded-full"
-            initial={{ width: 0 }}
-            animate={{ width: `${(completedPieces / R_PUZZLE_PIECES.length) * 100}%` }}
-            transition={{ duration: 0.5 }}
-          />
-        </div>
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="fixed top-5 inset-x-0 mx-auto w-max bg-black-200 text-white px-4 py-2 rounded shadow-lg z-50" // Made toast fixed and centered
+          >
+            {toast.message}
+          </motion.div>
+        )}
+      </AnimatePresence>
+      
+      <div className="flex justify-between items-center w-full mb-2 md:mb-4 max-w-sm">
+         <h3 className="text-white text-lg font-semibold">
+          Puzzle Challenge
+        </h3>
+        {(gameState === 'lost' || (gameState === 'won' && !showLoveCelebration)) && ( // Show play again if won but celebration isn't up (e.g. if auto-closed)
+            <motion.button
+                whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+                onClick={resetPuzzle}
+                className="px-4 py-2 bg-purple-600 text-white rounded-lg text-sm"
+            >
+                🔄 Play Again
+            </motion.button>
+        )}
+         {gameState === 'playing' && (
+             <div className="text-secondary text-sm">Attempt: {currentAttempt + 1}/{MAX_ATTEMPTS}</div>
+         )}
       </div>
 
-      <div className="relative">
-        <svg
-          ref={svgRef}
-          width="400"
-          height="300"
-          viewBox="0 0 400 300"
-          className="border border-gray-600 rounded-lg bg-black-100 touch-none select-none"
-          style={{ touchAction: 'none' }}
-        >
-          {/* Target outline (faded) */}
-          <g opacity="0.2" stroke="#666" strokeWidth="1" fill="none" strokeDasharray="3,3">
-            {R_PUZZLE_PIECES.map(piece => (
-              <path
-                key={`outline-${piece.id}`}
-                d={piece.path}
-                transform={`translate(${piece.correctPosition.x + 100}, ${piece.correctPosition.y + 50})`}
+      <div className="grid grid-rows-6 gap-1.5 md:gap-2 mb-4 md:mb-6">
+        {grid}
+      </div>
+
+      <div className="w-full max-w-md md:max-w-lg space-y-1.5 md:space-y-2">
+        {keyboardLayout.map((row, rowIndex) => (
+          <div key={rowIndex} className="flex justify-center gap-1 md:gap-1.5">
+            {row.map(keyVal => (
+              <Key
+                key={keyVal}
+                value={keyVal}
+                status={letterStatuses[keyVal]}
+                onClick={handleKeyPress}
               />
             ))}
-          </g>
-
-          {/* Puzzle pieces */}
-          {pieces.map(piece => (
-            <motion.g
-              key={piece.id}
-              animate={{
-                x: piece.currentPosition.x + 100,
-                y: piece.currentPosition.y + 50,
-                scale: piece.isDragging ? 1.1 : 1
-              }}
-              transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              style={{ cursor: piece.isPlaced ? 'default' : 'grab' }}
-              onMouseDown={(e) => handlePointerDown(e, piece.id)}
-              onTouchStart={(e) => handlePointerDown(e, piece.id)}
-            >
-              <path
-                d={piece.path}
-                fill={piece.isPlaced ? piece.color : `${piece.color}CC`}
-                stroke={piece.isDragging ? "#fff" : piece.color}
-                strokeWidth={piece.isDragging ? "2" : "1"}
-                filter={piece.isDragging ? "drop-shadow(0 0 10px rgba(255,255,255,0.5))" : "none"}
-              />
-            </motion.g>
-          ))}
-        </svg>
-
-        <p className="text-secondary text-sm mt-3 text-center">
-          💡 Drag and drop the colorful pieces to form the letter "R". Pieces will snap into place when positioned correctly!
-        </p>
+          </div>
+        ))}
       </div>
+       {gameState === 'lost' && !showLoveCelebration && (
+         <p className="text-red-400 text-center mt-4">The word was: {TARGET_WORD}</p>
+       )}
     </div>
   );
 };
 
+
+// --- About Component (Largely same as before, ensure it uses WordlyPuzzle) ---
+// Include the full About component from the previous response.
 const About = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [showPuzzle, setShowPuzzle] = useState(false);
   const [puzzleCompleted, setPuzzleCompleted] = useState(false);
   const sectionRef = useRef(null);
   
-  // Optimized intersection observer with cleanup
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
           setIsVisible(true);
           observer.unobserve(entry.target);
         }
-      },
-      { threshold: 0.1, rootMargin: '50px' }
+      }, { threshold: 0.1, rootMargin: '50px' }
     );
-    
     const currentRef = sectionRef.current;
-    if (currentRef) {
-      observer.observe(currentRef);
-    }
-    
-    return () => {
-      if (currentRef) {
-        observer.unobserve(currentRef);
-      }
-    };
+    if (currentRef) observer.observe(currentRef);
+    return () => { if (currentRef) observer.unobserve(currentRef); };
   }, []);
 
   const handlePuzzleComplete = useCallback(() => {
     setPuzzleCompleted(true);
-    setTimeout(() => setShowPuzzle(false), 3000);
+     // Optional: If you want the puzzle to auto-close after the celebration is shown by WordlyPuzzle.
+    // setTimeout(() => {
+    //    setShowPuzzle(false);
+    // }, 4000); // Adjust delay as needed, must be longer than WordlyPuzzle's own celebration timeout + onComplete delay
   }, []);
 
   const togglePuzzle = useCallback(() => {
-    setShowPuzzle(prev => !prev);
-    if (puzzleCompleted) {
-      setPuzzleCompleted(false);
-    }
+    setShowPuzzle(prev => {
+      // If we are opening the puzzle AND it was previously completed, reset puzzleCompleted for a fresh game.
+      if (!prev && puzzleCompleted) { 
+        setPuzzleCompleted(false); 
+      }
+      return !prev;
+    });
   }, [puzzleCompleted]);
 
   return (
     <div ref={sectionRef}>
-      <motion.div
-        variants={textVariant()}
-        initial="hidden"
-        animate={isVisible ? "show" : "hidden"}
-      >
+      <motion.div variants={textVariant()} initial="hidden" animate={isVisible ? "show" : "hidden"}>
         <p className={styles.sectionSubText}>Introduction</p>
         <h2 className={styles.sectionHeadText}>Overview.</h2>
       </motion.div>
 
-      <motion.p
-        variants={fadeIn("", "", 0.1, 1)}
-        initial="hidden"
-        animate={isVisible ? "show" : "hidden"}
-        className="mt-4 text-secondary text-[17px] max-w-3xl leading-[30px]"
-      >
+      <motion.p variants={fadeIn("", "", 0.1, 1)} initial="hidden" animate={isVisible ? "show" : "hidden"}
+                  className="mt-4 text-secondary text-[17px] max-w-3xl leading-[30px]">
         I am a highly motivated Full Stack Developer with experience in dynamic 
         and fast-paced environments. My expertise spans the MERN stack (MongoDB, Express.js, 
         React.js, and Node.js) with proficiency in PostgreSQL for relational database management.
@@ -454,53 +467,43 @@ const About = () => {
         leveraging RESTful APIs and managing state with Redux/Context API.
       </motion.p>
 
-      {/* Interactive Puzzle Section */}
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
-        transition={{ delay: 0.3, duration: 0.6 }}
-        className="mt-8"
-      >
+      <motion.div initial={{ opacity: 0, y: 30 }} animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+                    transition={{ delay: 0.3, duration: 0.6 }} className="mt-8">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-white text-xl font-semibold">
-            🧩 Interactive Challenge
+            💖 Interactive Word Challenge!
           </h3>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={togglePuzzle}
-            className={`px-6 py-3 rounded-lg font-medium transition-all ${
-              showPuzzle 
-                ? 'bg-red-500 hover:bg-red-600 text-white' 
-                : puzzleCompleted
-                ? 'bg-green-500 hover:bg-green-600 text-white'
-                : 'bg-gradient-to-r from-purple-500 to-cyan-500 hover:from-purple-600 hover:to-cyan-600 text-white'
-            }`}
-          >
-            {showPuzzle ? '✕ Close Puzzle' : puzzleCompleted ? '✓ Puzzle Completed!' : '🎮 Try the Letter R Puzzle!'}
+          <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={togglePuzzle}
+                         className={`px-6 py-3 rounded-lg font-medium transition-all ${
+                           showPuzzle 
+                             ? 'bg-red-500 hover:bg-red-600 text-white' 
+                             : puzzleCompleted // puzzleCompleted is true if onComplete from WordlyPuzzle was called
+                             ? 'bg-pink-500 hover:bg-pink-600 text-white' // Style for "Solved!"
+                             : 'bg-gradient-to-r from-purple-500 to-cyan-500 hover:from-purple-600 hover:to-cyan-600 text-white'
+                         }`}>
+            {showPuzzle ? '✕ Close Challenge' : puzzleCompleted ? '💌 Solved! Play Again?' : '💌 Try the Word Puzzle!'}
           </motion.button>
         </div>
         
         <AnimatePresence mode="wait">
           {showPuzzle && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              <LetterRPuzzle onComplete={handlePuzzleComplete} />
+            <motion.div key={puzzleCompleted ? 'wordly-reset' : 'wordly-active'} // Change key to force re-render if puzzleCompleted was true
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.4 }}>
+              <WordlyPuzzle onComplete={handlePuzzleComplete} />
             </motion.div>
           )}
         </AnimatePresence>
 
         {!showPuzzle && !puzzleCompleted && (
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="text-secondary text-sm mt-2"
-          >
-            Challenge yourself with an interactive puzzle - drag and arrange pieces to form the letter "R"! 🧩✨
+          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-secondary text-sm mt-2">
+            Can you guess the secret 4-letter word? Give it a try! 💖✨
+          </motion.p>
+        )}
+         {!showPuzzle && puzzleCompleted && ( // This message shows after puzzle is solved and closed
+          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-pink-400 text-sm mt-2">
+            You solved the puzzle! Thanks for playing! 🥰 Click above to try again.
           </motion.p>
         )}
       </motion.div>
