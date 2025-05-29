@@ -68,9 +68,9 @@ ServiceCard.displayName = 'ServiceCard';
 // --- END UNCHANGED ServiceCard ---
 
 
-const TARGET_WORD = "RIFA"; // The target word for the puzzle
+const TARGET_WORD = "RIFA"; 
 const WORD_LENGTH = 4;
-const MAX_ATTEMPTS = 2;
+const MAX_ATTEMPTS = 3;
 
 const getGuessFeedback = (guess, target) => {
   const feedback = new Array(WORD_LENGTH).fill('absent');
@@ -330,7 +330,7 @@ const WordlyPuzzle = ({ onComplete }) => {
           💖✨❤️
         </motion.div>
         <h3 className="text-2xl font-bold text-white mb-4">
-          You found Zues! It's a match! 🎉
+          You found it ! It's a match! 🎉
         </h3>
         <div className="space-y-3">
           {PUZZLE_COMPLETION_FACTS.map((fact, index) => (
@@ -477,7 +477,7 @@ const About = () => {
                          className={`px-6 py-3 rounded-lg font-medium transition-all ${
                            showPuzzle 
                              ? 'bg-red-500 hover:bg-red-600 text-white' 
-                             : puzzleCompleted // puzzleCompleted is true if onComplete from WordlyPuzzle was called
+                             : puzzleCompleted 
                              ? 'bg-pink-500 hover:bg-pink-600 text-white' // Style for "Solved!"
                              : 'bg-gradient-to-r from-purple-500 to-cyan-500 hover:from-purple-600 hover:to-cyan-600 text-white'
                          }`}>
