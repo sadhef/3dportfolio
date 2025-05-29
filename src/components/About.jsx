@@ -10,9 +10,9 @@ import { fadeIn, textVariant } from "../utils/motion";
 
 // Fun facts (can remain as is or be updated)
 const PUZZLE_COMPLETION_FACTS = [
-  "💖 You guessed it! Zeus is a special name!",
+  "💖 You guessed it! It is a special name!",
   "💡 Finding the right word is like finding a special connection.",
-  "🎯 We're a perfect match, just like the letters in Zeus!",
+  "🎯 We're a perfect match, just like the letters in Puzzle!",
   "⚡ This puzzle was a journey, and you navigated it beautifully!",
   "🔥 Thanks for playing! Your guess warmed my heart!",
 ];
@@ -68,9 +68,9 @@ ServiceCard.displayName = 'ServiceCard';
 // --- END UNCHANGED ServiceCard ---
 
 
-const TARGET_WORD = "ZEUS";
+const TARGET_WORD = "RIFA"; // The target word for the puzzle
 const WORD_LENGTH = 4;
-const MAX_ATTEMPTS = 6;
+const MAX_ATTEMPTS = 2;
 
 const getGuessFeedback = (guess, target) => {
   const feedback = new Array(WORD_LENGTH).fill('absent');
@@ -252,7 +252,7 @@ const WordlyPuzzle = ({ onComplete }) => {
       if (guessStr === TARGET_WORD) {
         setGameState('won');
         setShowLoveCelebration(true);
-        showToast("You found Zeus! ❤️");
+        showToast("You found the Word ! ❤️");
         // Ensure onComplete is called after a delay to show celebration
         setTimeout(() => { // Added extra delay for onComplete
             onComplete?.();
