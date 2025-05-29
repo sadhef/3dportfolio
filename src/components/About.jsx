@@ -10,9 +10,9 @@ import { fadeIn, textVariant } from "../utils/motion";
 
 // Fun facts (can remain as is or be updated)
 const PUZZLE_COMPLETION_FACTS = [
-  "💖 You guessed it! Rifa is a special name!",
+  "💖 You guessed it! Zeus is a special name!",
   "💡 Finding the right word is like finding a special connection.",
-  "🎯 We're a perfect match, just like the letters in Rifa!",
+  "🎯 We're a perfect match, just like the letters in Zeus!",
   "⚡ This puzzle was a journey, and you navigated it beautifully!",
   "🔥 Thanks for playing! Your guess warmed my heart!",
 ];
@@ -68,7 +68,7 @@ ServiceCard.displayName = 'ServiceCard';
 // --- END UNCHANGED ServiceCard ---
 
 
-const TARGET_WORD = "RIFA";
+const TARGET_WORD = "ZEUS";
 const WORD_LENGTH = 4;
 const MAX_ATTEMPTS = 3;
 
@@ -252,7 +252,7 @@ const WordlyPuzzle = ({ onComplete }) => {
       if (guessStr === TARGET_WORD) {
         setGameState('won');
         setShowLoveCelebration(true);
-        showToast("You found Rifa! ❤️");
+        showToast("You found Zeus! ❤️");
         // Ensure onComplete is called after a delay to show celebration
         setTimeout(() => { // Added extra delay for onComplete
             onComplete?.();
@@ -330,7 +330,7 @@ const WordlyPuzzle = ({ onComplete }) => {
           💖✨❤️
         </motion.div>
         <h3 className="text-2xl font-bold text-white mb-4">
-          You found Rifa! It's a match! 🎉
+          You found Zues! It's a match! 🎉
         </h3>
         <div className="space-y-3">
           {PUZZLE_COMPLETION_FACTS.map((fact, index) => (
@@ -471,7 +471,7 @@ const About = () => {
                     transition={{ delay: 0.3, duration: 0.6 }} className="mt-8">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-white text-xl font-semibold">
-            💖 Interactive Word Challenge!
+             Interactive Word Challenge!
           </h3>
           <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={togglePuzzle}
                          className={`px-6 py-3 rounded-lg font-medium transition-all ${
@@ -481,7 +481,7 @@ const About = () => {
                              ? 'bg-pink-500 hover:bg-pink-600 text-white' // Style for "Solved!"
                              : 'bg-gradient-to-r from-purple-500 to-cyan-500 hover:from-purple-600 hover:to-cyan-600 text-white'
                          }`}>
-            {showPuzzle ? '✕ Close Challenge' : puzzleCompleted ? '💌 Solved! Play Again?' : '💌 Try the Word Puzzle!'}
+            {showPuzzle ? '✕ Close Challenge' : puzzleCompleted ? ' Solved! Play Again?' : ' Try the Word Puzzle!'}
           </motion.button>
         </div>
         
@@ -498,12 +498,12 @@ const About = () => {
 
         {!showPuzzle && !puzzleCompleted && (
           <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-secondary text-sm mt-2">
-            Can you guess the secret 4-letter word? Give it a try! 💖✨
+            Can you guess the secret 4-letter word? Give it a try! ✨
           </motion.p>
         )}
          {!showPuzzle && puzzleCompleted && ( // This message shows after puzzle is solved and closed
           <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-pink-400 text-sm mt-2">
-            You solved the puzzle! Thanks for playing! 🥰 Click above to try again.
+            You solved the puzzle! Thanks for playing!  Click above to try again.
           </motion.p>
         )}
       </motion.div>
