@@ -28,6 +28,7 @@ import tesla from "./company/tesla.png";
 
 import carrent from "./carrent.png";
 import jobit from "./jobit.webp";
+import weather from "./weather.webp";
 import tripguide from "./tripguide.png";
 import turf from "./turf.webp";
 import biz from "./biz.webp";
@@ -62,6 +63,7 @@ export {
   tesla,
   carrent,
   jobit,
+  weather,
   tripguide,
   turf,
   biz,

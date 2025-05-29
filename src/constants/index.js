@@ -26,6 +26,7 @@ import {
   turf,
   jobit,
   tripguide,
+  weather,
   threejs,
   cook,
 } from "../assets";
@@ -235,5 +236,26 @@ export const projects = [
     ],
     image: jobit,
     source_code_link: "https://magical-gaufre-b5f535.netlify.app/",
+  },
+  {
+    name: "Re-Weather",
+    description:
+      "A React app using Vite and Bootstrap that displays current Weather Updates.Fetches Weather data from an external API.",
+    tags: [
+      {
+        name: "JavaScript",
+        color: "blue-text-gradient",
+      },
+      {
+        name: "Bootstrap",
+        color: "green-text-gradient",
+      },
+      {
+        name: "css",
+        color: "pink-text-gradient",
+      },
+    ],
+    image: weather,
+    source_code_link: "https://re-weather-eta.vercel.app/",
   },
 ];
