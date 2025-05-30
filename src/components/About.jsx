@@ -68,8 +68,8 @@ ServiceCard.displayName = 'ServiceCard';
 // --- END UNCHANGED ServiceCard ---
 
 
-const TARGET_WORD = "SALMA"; 
-const WORD_LENGTH = 5;
+const TARGET_WORD = "RIFA"; 
+const WORD_LENGTH = 4;
 const MAX_ATTEMPTS = 3;
 
 const getGuessFeedback = (guess, target) => {
