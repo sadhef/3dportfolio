@@ -1,7 +1,29 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
+
+// Throttle function
+const throttle = (func, limit) => {
+  let lastFunc;
+  let lastRan;
+  return function () {
+    const context = this;
+    const args = arguments;
+    if (!lastRan) {
+      func.apply(context, args);
+      lastRan = Date.now();
+    } else {
+      clearTimeout(lastFunc);
+      lastFunc = setTimeout(function () {
+        if (Date.now() - lastRan >= limit) {
+          func.apply(context, args);
+          lastRan = Date.now();
+        }
+      }, limit - (Date.now() - lastRan));
+    }
+  };
+};
 
 const calculateMovement = (mouseX, mouseY, index, isClient) => {
   const defaultWidth = 1920;
@@ -56,7 +78,7 @@ const AnimatedCharacter = ({ character, index, mouseX, mouseY, isClient }) => {
 };
 
 const FloatingDots = ({ count = 25, isClient }) => {
-  const randomPositions = React.useRef(
+  const randomPositions = useRef(
     Array.from({ length: count }, () => ({
       initialX: Math.random(),
       initialY: Math.random(),
@@ -107,27 +129,23 @@ const Hero = () => {
   const [displayedText, setDisplayedText] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
 
+  const throttledMouseMove = useCallback(
+    throttle((e) => {
+      setMousePosition({ x: e.clientX, y: e.clientY });
+    }, 50),
+    []
+  );
+
   useEffect(() => {
     setIsClient(true);
     setIsVisible(true);
 
-    let lastMoveTime = 0;
-    const moveThreshold = 10;
-
-    const handleMouseMove = (e) => {
-      const now = Date.now();
-      if (now - lastMoveTime > moveThreshold) {
-        setMousePosition({ x: e.clientX, y: e.clientY });
-        lastMoveTime = now;
-      }
-    };
-
-    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mousemove", throttledMouseMove);
 
     return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mousemove", throttledMouseMove);
     };
-  }, []);
+  }, [throttledMouseMove]);
 
   useEffect(() => {
     const typingSpeed = 100;
@@ -251,43 +269,6 @@ const Hero = () => {
             Contact Me
           </motion.a>
         </motion.div>
-
-        <motion.div
-          className="flex flex-wrap justify-center gap-x-3 gap-y-2 sm:gap-x-4 mt-8 sm:mt-12 max-w-xl"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: isVisible ? 1 : 0 }}
-          transition={{ delay: 1.2 }}
-        >
-          {["React", "Node.js", "MongoDB", "Express", "Python", "JavaScript", "Docker"].map((tech, index) => (
-            <motion.span
-              key={index}
-              className="px-2 sm:px-3 py-1 bg-gray-800 bg-opacity-50 rounded-full text-xs sm:text-sm text-gray-300"
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 1.4 + index * 0.1 }}
-              whileHover={{ scale: 1.1, backgroundColor: "rgba(255,255,255,0.1)" }}
-            >
-              {tech}
-            </motion.span>
-          ))}
-        </motion.div>
-
-        {isClient && (
-          <motion.div
-            className="absolute bottom-10 left-1/2 transform -translate-x-1/2"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: [0, 1, 0], y: [0, 10, 0] }}
-            transition={{ repeat: Infinity, duration: 2, delay: 2 }}
-          >
-            <div className="w-5 h-10 border-2 border-white rounded-full flex justify-center items-start p-2">
-              <motion.div
-                animate={{ y: [0, 12, 0] }}
-                transition={{ repeat: Infinity, duration: 1.5 }}
-                className="w-1 h-1 bg-white rounded-full"
-              />
-            </div>
-          </motion.div>
-        )}
       </div>
 
       <style jsx global>{`

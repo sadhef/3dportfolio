@@ -23,7 +23,7 @@ const ProjectCard = ({ index, name, description, tags, image, source_code_link }
       ([entry]) => {
         if (entry.isIntersecting) {
           setIsVisible(true);
-          observer.unobserve(entry.target);
+          observer.unobserve(entry.target); // Disconnect observer after visibility
         }
       },
       { threshold: 0.1 }
@@ -31,9 +31,9 @@ const ProjectCard = ({ index, name, description, tags, image, source_code_link }
     
     observer.observe(cardRef.current);
     
-    return () => observer.unobserve(cardRef.current);
+    return () => observer.disconnect();
   }, []);
-
+  
   return (
     <motion.div
       ref={cardRef}
@@ -50,6 +50,7 @@ const ProjectCard = ({ index, name, description, tags, image, source_code_link }
           fill
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           className="w-full h-full object-cover rounded-2xl"
+          loading="lazy" // Lazy load images for better performance
         />
 
         <div className="absolute inset-0 flex justify-end m-3 card-img_hover">
@@ -105,7 +106,7 @@ const Works = () => {
       ([entry]) => {
         if (entry.isIntersecting) {
           setIsVisible(true);
-          observer.unobserve(entry.target);
+          observer.unobserve(entry.target); // Disconnect observer after visibility
         }
       },
       { threshold: 0.1 }
@@ -113,9 +114,9 @@ const Works = () => {
     
     observer.observe(sectionRef.current);
     
-    return () => observer.unobserve(sectionRef.current);
+    return () => observer.disconnect();
   }, []);
-
+  
   return (
     <div ref={sectionRef} className="relative w-full mx-auto">
       {/* Fixed section title - always visible regardless of animation state */}

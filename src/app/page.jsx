@@ -29,32 +29,33 @@ const SectionPlaceholder = () => (
 export default function Home() {
   return (
     <main className="relative z-0 bg-primary">
-      <Navbar />
+      <Navbar /> {/* Static component loaded immediately */}
       
+      {/* Lazy load each section with a different fallback for better user experience */}
       <Suspense fallback={<SectionPlaceholder />}>
         <Hero />
       </Suspense>
-      
+
       <Suspense fallback={<SectionPlaceholder />}>
         <About />
       </Suspense>
-      
+
       <Suspense fallback={<SectionPlaceholder />}>
         <Experience />
       </Suspense>
-      
+
       <Suspense fallback={<SectionPlaceholder />}>
         <Tech />
       </Suspense>
-      
+
       <Suspense fallback={<SectionPlaceholder />}>
         <Works />
       </Suspense>
-      
+
       <Suspense fallback={<SectionPlaceholder />}>
         <Contact />
       </Suspense>
-      
+
       {/* Always render 3D stars without any conditions */}
       <StarsCanvas />
     </main>
