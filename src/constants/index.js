@@ -21,6 +21,7 @@ import {
   tesla,
   shopify,
   carrent,
+  doc,
   biz,
   blade,
   turf,
@@ -217,6 +218,31 @@ export const projects = [
       source_code_link: "https://bladerunner.greenjets.com/",
   },
   {
+    name: "Ri-MediConsult",
+    description:
+    "A comprehensive telemedicine platform built with Next.js and Node.js that connects patients with verified doctors through secure video consultations. Features include real-time video calling, credit-based subscription system, doctor verification and profiles, appointment scheduling and management, medical records storage, flexible payment packages with non-expiring credits, patient-doctor rating system, multi-device responsive design, and HIPAA-compliant secure data handling for seamless healthcare delivery anytime, anywhere.",
+    tags: [
+    {
+     name: "Next.js",
+     color: "blue-text-gradient",
+    },
+    {
+     name: "Node.js",
+     color: "green-text-gradient",
+    },
+    {
+     name: "MongoDB",
+     color: "yellow-text-gradient",
+    },
+    {
+     name: "ShadeCn Ui",
+     color: "pink-text-gradient",
+    }
+    ],
+    image: doc,
+    source_code_link: "https://ri-mediconsult.vercel.app/",
+  },
+  {
     name: "RIFILX Movie Website",
     description:
       "A React app using Vite and Bootstrap that displays favorite movies with reusable components (Header, Movie, MovieList) and props.Fetches movie data from an external API.",
@@ -258,4 +284,5 @@ export const projects = [
     image: weather,
     source_code_link: "https://re-weather-eta.vercel.app/",
   },
+  
 ];

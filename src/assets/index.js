@@ -34,6 +34,7 @@ import turf from "./turf.webp";
 import biz from "./biz.webp";
 import blade from "./blade.webp";
 import cook from "./cook.webp";
+import doc from "./doc.webp";
 
 export {
   backend,
@@ -67,6 +68,7 @@ export {
   tripguide,
   turf,
   biz,
+  doc,
   blade,
   cook,
 };
