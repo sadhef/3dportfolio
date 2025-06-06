@@ -70,7 +70,7 @@ ServiceCard.displayName = 'ServiceCard';
 
 const TARGET_WORD = "DONE"; 
 const WORD_LENGTH = 4;
-const MAX_ATTEMPTS = 3;
+const MAX_ATTEMPTS = 6;
 
 const getGuessFeedback = (guess, target) => {
   const feedback = new Array(WORD_LENGTH).fill('absent');
