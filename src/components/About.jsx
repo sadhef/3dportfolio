@@ -68,7 +68,7 @@ ServiceCard.displayName = 'ServiceCard';
 // --- END UNCHANGED ServiceCard ---
 
 
-const TARGET_WORD = "RIFA"; 
+const TARGET_WORD = "DONE"; 
 const WORD_LENGTH = 4;
 const MAX_ATTEMPTS = 3;
 
